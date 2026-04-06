@@ -627,14 +627,12 @@
   buildNavLabel('Connect', 'Comunicaci&oacute;n');
   buildNavItem('messages', '&#9993;', 'Messages', 'Mensajes', false);
 
-  if (isClient) {
-    buildNavLabel('Programs', 'Programas');
-    buildNavItem('programs',    '&#9672;', 'Referral Partner', 'Socio Referido', false);
-    buildNavItem('newsletter',  '&#9993;', 'Newsletter', 'Bolet&iacute;n', false);
-  }
-
   buildNavLabel('Account', 'Cuenta');
-  if (isClient) buildNavItem('perks', '&#9733;', 'Perks', 'Beneficios', false);
+  if (isClient) {
+    buildNavItem('perks',       '&#9733;', 'Perks',            'Beneficios',    false);
+    buildNavItem('programs',    '&#9672;', 'Referral Partner', 'Socio Referido', false);
+    buildNavItem('newsletter',  '&#9993;', 'Newsletter',       'Bolet&iacute;n', false);
+  }
 
   if (isReferral) {
     buildNavLabel('Referrals', 'Referidos');
