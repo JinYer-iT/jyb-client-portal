@@ -197,6 +197,9 @@
   <div class="dash-topbar-right">
     <span class="dash-client-name" id="nav-client-label">Loading&hellip;</span>
     <a href="/settings.html" class="settings-gear-btn" title="Account Settings / Configuración">&#9881;</a>
+    <button class="btn btn-ghost btn-sm" onclick="JYB.signOut()" style="font-size:.75rem;padding:5px 12px;border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#8A8F9E;white-space:nowrap;">
+      <span class="t-en">Sign Out</span><span class="t-sep"> / </span><span class="t-es">Salir</span>
+    </button>
   </div>
 </header>
 
@@ -643,6 +646,14 @@
   if (isStore) {
     buildNavItem('store', '&#9749;', 'My Orders', 'Mis Pedidos', false);
   }
+
+  // ── Settings (always at bottom) ───────────────────────────
+  buildNavLabel('Settings', 'Ajustes');
+  var settingsNavEl = document.createElement('a');
+  settingsNavEl.href = '/settings.html';
+  settingsNavEl.className = 'nav-item';
+  settingsNavEl.innerHTML = '<span class="nav-icon">&#9881;</span><span class="t-en">Settings</span><span class="t-sep"> / </span><span class="t-es">Ajustes</span>';
+  sidebar.appendChild(settingsNavEl);
 
   // ── Global data store (populated by loadAll) ─────────────
   var _stepData    = { meetings: [], invoices: [], projects: [] };
@@ -1351,7 +1362,7 @@
           '<span class="t-es">D&iacute;nos qu&eacute; quieres construir. Lo ejecutamos con nuestras herramientas. T&uacute; pagas tus propias suscripciones. Gana 15% cuando licenciamos tu sistema a otros.</span>' +
         '</div>' +
         '<div class="program-card__price">$50<span>/mo + $50/build</span></div>' +
-        '<button class="btn btn-outline btn-sm" onclick="openBuilderModal()"><span class="t-en">Learn More</span><span class="t-sep"> / </span><span class="t-es">Saber M&aacute;s</span></button>' +
+        '<button class="btn btn-ghost btn-sm" disabled style="opacity:.45;cursor:not-allowed;"><span class="t-en">Coming Soon</span><span class="t-sep"> / </span><span class="t-es">Pr&oacute;ximamente</span></button>' +
       '</div>';
 
     el.innerHTML = referralCard + builderCard;
