@@ -40,182 +40,530 @@
     /* Submit referral form */
     .ref-submit-form { background:rgba(255,255,255,.03); border:1px solid var(--border,rgba(255,255,255,.1)); border-radius:8px; padding:20px; margin-top:16px; display:none; }
     .ref-submit-form.open { display:block; }
+
+    /* ── Messaging thread ─────────────────────────────────── */
+    .msg-thread { display:flex; flex-direction:column; gap:12px; padding:16px 0; min-height:200px; max-height:480px; overflow-y:auto; }
+    .msg-bubble { max-width:75%; padding:10px 14px; border-radius:10px; font-size:13px; line-height:1.5; }
+    .msg-bubble.from-admin { align-self:flex-start; background:rgba(255,255,255,0.06); color:#F0F2F6; }
+    .msg-bubble.from-client { align-self:flex-end; background:rgba(255,255,255,0.12); color:#F0F2F6; }
+    .msg-meta { font-size:11px; color:#8A8F9E; margin-top:4px; }
+    .msg-compose { border-top:1px solid rgba(255,255,255,0.08); padding-top:16px; margin-top:16px; }
+
+    /* ── Language filter system ─────────────────────────── */
+    body.lang-en  .t-es, body.lang-en  .t-sep { display:none !important; }
+    body.lang-es  .t-en, body.lang-es  .t-sep { display:none !important; }
+    body.lang-both .t-sep { display:inline; }
+
+    /* ── Language selector buttons ───────────────────────── */
+    .lang-selector { display:flex; gap:6px; }
+    .lang-btn { padding:5px 14px; border:1px solid rgba(255,255,255,.18); background:transparent; color:var(--text-muted,#8A8F9E); font-size:.78rem; border-radius:4px; cursor:pointer; transition:all .15s; }
+    .lang-btn.active { background:rgba(255,255,255,.12); color:var(--text-primary,#F0F2F6); border-color:rgba(255,255,255,.4); font-weight:600; }
+
+    /* ── Timeline graph ──────────────────────────────────── */
+    .timeline-wrap { position:relative; padding:28px 0 20px; }
+    .timeline-track { position:relative; height:4px; background:rgba(255,255,255,.08); border-radius:4px; margin:0 20px; }
+    .timeline-fill { position:absolute; left:0; top:0; height:100%; background:rgba(255,255,255,.25); border-radius:4px; transition:width .6s ease; }
+    .timeline-events { position:relative; display:flex; align-items:flex-start; }
+    .timeline-dot {
+      position:absolute; transform:translateX(-50%);
+      display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
+    .timeline-dot__circle {
+      width:14px; height:14px; border-radius:50%;
+      border:2px solid rgba(255,255,255,.3);
+      background:var(--surface-1,#0D0E12);
+      margin-top:-9px; flex-shrink:0;
+      transition:all .2s;
+    }
+    .timeline-dot.done .timeline-dot__circle { background:rgba(255,255,255,.5); border-color:rgba(255,255,255,.7); }
+    .timeline-dot.upcoming .timeline-dot__circle { border-color:#F59E0B; box-shadow:0 0 0 3px rgba(245,158,11,.15); }
+    .timeline-dot.overdue .timeline-dot__circle { border-color:#EF4444; box-shadow:0 0 0 3px rgba(239,68,68,.15); }
+    .timeline-dot__label { font-size:.68rem; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted,#8A8F9E); white-space:nowrap; }
+    .timeline-dot__date { font-size:.72rem; color:var(--text-muted,#8A8F9E); white-space:nowrap; }
+    .timeline-dot.upcoming .timeline-dot__label { color:#F59E0B; }
+    .timeline-dot.overdue .timeline-dot__label { color:#EF4444; }
+    .timeline-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,.06); }
+    .timeline-legend-item { display:flex; align-items:center; gap:6px; font-size:.72rem; color:var(--text-muted,#8A8F9E); }
+    .legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+    /* ── Programs cards ──────────────────────────────────── */
+    .programs-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-top:4px; }
+    .program-card { background:var(--surface-2,rgba(255,255,255,.04)); border:1px solid var(--border,rgba(255,255,255,.08)); border-radius:12px; padding:24px; display:flex; flex-direction:column; gap:10px; }
+    .program-card__badge { font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted,#8A8F9E); }
+    .program-card__title { font-family:var(--font-head,'Cormorant Garamond'); font-size:1.25rem; font-weight:500; color:var(--text-primary,#F0F2F6); line-height:1.2; }
+    .program-card__desc { font-size:.8rem; color:var(--text-muted,#8A8F9E); line-height:1.6; flex:1; }
+    .program-card__price { font-family:var(--font-head,'Cormorant Garamond'); font-size:1.6rem; font-weight:600; color:var(--text-primary,#F0F2F6); }
+    .program-card__price span { font-size:.8rem; font-weight:400; color:var(--text-muted,#8A8F9E); }
+
+    /* ── Schedule CTA ────────────────────────────────────── */
+    .schedule-banner { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:20px 24px; }
+    .schedule-banner__text h4 { font-family:var(--font-head,'Cormorant Garamond'); font-size:1.15rem; font-weight:500; color:var(--text-primary,#F0F2F6); margin:0 0 4px; }
+    .schedule-banner__text p { font-size:.8rem; color:var(--text-muted,#8A8F9E); margin:0; }
+
+    /* ── Preference toggles ─────────────────────────────── */
+    .pref-row { display:flex; align-items:flex-start; justify-content:space-between; gap:20px; padding:14px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+    .pref-row:last-of-type { border-bottom:none; }
+    .pref-info { flex:1; }
+    .pref-label { font-size:.88rem; font-weight:600; color:var(--text-primary,#F0F2F6); margin-bottom:4px; }
+    .pref-desc { font-size:.75rem; color:var(--text-muted,#8A8F9E); line-height:1.5; }
+    .pref-toggle { position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0; margin-top:2px; }
+    .pref-toggle input { opacity:0; width:0; height:0; }
+    .pref-slider { position:absolute; cursor:pointer; inset:0; background:rgba(255,255,255,.12); border-radius:24px; transition:.2s; }
+    .pref-slider:before { content:''; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:#8A8F9E; border-radius:50%; transition:.2s; }
+    .pref-toggle input:checked + .pref-slider { background:rgba(255,255,255,.35); }
+    .pref-toggle input:checked + .pref-slider:before { transform:translateX(20px); background:#F0F2F6; }
+
+    /* ── Step Progress Bar (old — hidden) ─── */
+    .step-bar { display:none !important; }
+    .util-tab-bar { display:none !important; }
+    .tab-bar { display:none !important; }
+    .portal-nav { display:none !important; }
+    .tab-content { display:block; }
+
+    /* ── Context tabs bar (top of main content) ─────────── */
+    #context-tabs { display:none; align-items:center; margin:-32px -36px 28px; padding:0 2px; border-bottom:1px solid rgba(255,255,255,.1); background:#191c25; overflow-x:auto; flex-shrink:0; }
+    #context-tabs.visible { display:flex; }
+    .ctx-tab { display:flex; align-items:center; gap:8px; padding:12px 20px; cursor:pointer; border-bottom:2px solid transparent; white-space:nowrap; transition:.15s; color:#6b7280; font-size:.8rem; font-weight:500; user-select:none; }
+    .ctx-tab:hover:not(.locked) { color:#F0F2F6; background:rgba(255,255,255,.04); }
+    .ctx-tab.active { border-bottom-color:#e5e7eb; color:#F0F2F6; }
+    .ctx-tab.locked { opacity:.28; cursor:not-allowed; pointer-events:none; }
+    .ctx-tab-circle { width:20px; height:20px; border-radius:50%; border:1.5px solid rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; font-size:.6rem; font-weight:700; flex-shrink:0; color:#6b7280; }
+    .ctx-tab.active .ctx-tab-circle { background:rgba(255,255,255,.15); border-color:#e5e7eb; color:#F0F2F6; }
+    .ctx-tab.done .ctx-tab-circle { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.4); color:#d1d5db; }
+    .ctx-separator { width:24px; height:1px; background:rgba(255,255,255,.1); flex-shrink:0; align-self:center; }
+
+    /* ── Accountant-style layout ── */
+    html, body { height:100%; }
+    body { display:flex; flex-direction:column; background:#13151c; }
+    #dash-topbar { display:flex; align-items:center; justify-content:space-between; padding:0 28px; height:58px; background:#1c1f29; border-bottom:1px solid rgba(255,255,255,.1); position:sticky; top:0; z-index:100; flex-shrink:0; }
+    .dash-brand { font-family:var(--font-head,'Space Grotesk'); font-size:1.05rem; font-weight:600; color:#F0F2F6; letter-spacing:.06em; text-transform:uppercase; }
+    .dash-brand span { color:#6b7280; font-size:.75rem; margin-left:6px; font-weight:400; text-transform:none; letter-spacing:0; }
+    .dash-topbar-right { display:flex; align-items:center; gap:10px; }
+    .dash-client-name { font-size:.8rem; color:#9ca3af; letter-spacing:.06em; text-transform:uppercase; font-weight:500; }
+    /* Gear / settings link button */
+    .settings-gear-btn { display:flex; align-items:center; justify-content:center; width:34px; height:34px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.13); border-radius:50%; color:#9ca3af; font-size:1rem; transition:.15s; flex-shrink:0; text-decoration:none; }
+    .settings-gear-btn:hover { background:rgba(255,255,255,.13); color:#F0F2F6; border-color:rgba(255,255,255,.3); }
+    /* Step bar (old) */
+    #step-bar-main { display:none; }
+    .step-main-item, .step-main-circle, .step-connector-line { display:none; }
+    /* Layout */
+    #dash-layout { display:flex; flex:1; min-height:0; overflow:hidden; }
+    #dash-sidebar { width:220px; background:#191c25; border-right:1px solid rgba(255,255,255,.08); padding:20px 0; display:flex; flex-direction:column; gap:1px; position:sticky; top:58px; height:calc(100vh - 58px); overflow-y:auto; flex-shrink:0; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:9px 20px; color:#6b7280; cursor:pointer; transition:.15s; border-left:3px solid transparent; font-size:.82rem; user-select:none; font-weight:500; }
+    .nav-item:hover:not(.locked) { color:#F0F2F6; background:rgba(255,255,255,.05); }
+    .nav-item.active { color:#F0F2F6; border-left-color:rgba(255,255,255,.55); background:rgba(255,255,255,.07); }
+    .nav-item.locked { opacity:.25; cursor:not-allowed; pointer-events:none; }
+    .nav-section-label { font-size:.58rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#4b5563; padding:16px 20px 5px; }
+    .nav-icon { font-size:.82rem; width:16px; text-align:center; flex-shrink:0; }
+    #dash-main { flex:1; padding:32px 36px; overflow-y:auto; min-width:0; background:#13151c; }
+    .section { display:none; }
+    .section.active { display:block; }
+    .section-title { font-family:var(--font-head,'Space Grotesk'); font-size:1.35rem; font-weight:600; color:#F0F2F6; margin-bottom:24px; letter-spacing:.02em; }
+    .dash-two-col { display:grid; grid-template-columns:1fr 340px; gap:24px; margin-top:0; }
+    .dash-two-col-left { min-width:0; }
+    .dash-two-col-right { min-width:0; }
+    .overview-panel { background:#1c1f29; border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:20px 22px; margin-bottom:16px; }
+    .overview-panel__title { font-size:.65rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#6b7280; margin-bottom:14px; }
+    /* ── Portal footer ───────────────────────────────────── */
+    #portal-footer {
+      border-top:1px solid rgba(255,255,255,.08);
+      padding:20px 0 8px;
+      margin-top:40px;
+    }
+    .footer-label {
+      font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:#4b5563; margin-bottom:10px;
+    }
+    .footer-links { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .footer-link {
+      font-size:.8rem; color:#6b7280; text-decoration:none;
+      transition:.15s; padding:2px 0;
+    }
+    .footer-link:hover { color:#F0F2F6; }
+    .footer-sep { color:#374151; font-size:.7rem; }
+
+    @media(max-width:900px) {
+      #dash-sidebar { display:none; }
+      .dash-two-col { grid-template-columns:1fr; }
+      #dash-main { padding:20px 16px; }
+    }
   </style>
 </head>
 <body>
 
-<!-- Nav -->
-<nav class="portal-nav">
-  <a href="/dashboard.html" class="nav-brand"><span class="nav-logo-text">JYB</span></a>
-  <div class="nav-spacer"></div>
-  <span class="nav-label" id="nav-client-label">Loading&hellip;</span>
-  <button class="btn btn-ghost btn-sm" onclick="JYB.signOut()">Sign Out</button>
-</nav>
+<!-- Topbar -->
+<header id="dash-topbar">
+  <div class="dash-brand">JYB <span>&middot; Client Portal</span></div>
+  <div class="dash-topbar-right">
+    <span class="dash-client-name" id="nav-client-label">Loading&hellip;</span>
+    <a href="/settings.html" class="settings-gear-btn" title="Account Settings / Configuración">&#9881;</a>
+  </div>
+</header>
 
-<!-- Tab Bar — built dynamically -->
-<div class="tab-bar" id="tab-bar" role="tablist"></div>
 
-<!-- Loading -->
-<div id="global-spinner" class="spinner-wrap"><div class="spinner"></div></div>
+<div id="dash-layout">
+  <nav id="dash-sidebar">
+    <!-- built dynamically by JS -->
+  </nav>
 
-<!-- Error -->
-<div id="global-error" class="tab-content" style="display:none; max-width:600px; padding:40px 24px;">
-  <div class="msg msg-error visible" id="global-error-msg"></div>
-  <button class="btn btn-outline btn-sm mt-sm" onclick="window.location.reload()">Retry</button>
-</div>
+  <main id="dash-main">
+    <!-- Context tabs (built by JS, shown based on active section) -->
+    <div id="context-tabs"></div>
 
-<!-- Tab Contents -->
-<div id="tab-contents" style="display:none;">
+    <!-- Loading -->
+    <div id="global-spinner" class="spinner-wrap"><div class="spinner"></div></div>
 
-  <!-- ── Overview ─────────────────────────────────────────── -->
-  <section class="tab-content" id="tab-overview" role="tabpanel">
-    <div class="card-grid mb-md" id="stat-cards"></div>
-    <div id="join-referral-promo"></div>
-
-    <div id="overview-client-section">
-      <div class="divider"></div>
-      <div class="section-header mt-md">
-        <span class="section-title">Current Projects</span>
-      </div>
-      <div id="overview-projects" class="project-list mb-md"></div>
-
-      <div class="divider"></div>
-      <div class="section-header mt-md">
-        <span class="section-title">Recent Invoice</span>
-      </div>
-      <div id="overview-invoice"></div>
+    <!-- Error -->
+    <div id="global-error" class="section" style="display:none; max-width:600px; padding:40px 0;">
+      <div class="msg msg-error visible" id="global-error-msg"></div>
+      <button class="btn btn-outline btn-sm mt-sm" onclick="window.location.reload()">Retry</button>
     </div>
 
-    <div id="overview-referral-section" style="display:none;">
-      <div class="divider"></div>
-      <div class="section-header mt-md">
-        <span class="section-title">Your Referral Link</span>
-      </div>
-      <div id="overview-ref-link" class="mb-md"></div>
-    </div>
-  </section>
+    <!-- All sections -->
+    <div id="dash-sections">
 
-  <!-- ── Projects ─────────────────────────────────────────── -->
-  <section class="tab-content" id="tab-projects" role="tabpanel">
-    <div class="section-header"><span class="section-title">All Projects</span></div>
-    <div id="projects-list" class="project-list"></div>
-  </section>
+      <!-- ── Overview ──────────────────────────────────────── -->
+      <section class="section" id="sec-overview">
+        <h2 class="section-title"><span class="t-en">Overview</span><span class="t-sep"> / </span><span class="t-es">Resumen</span></h2>
 
-  <!-- ── Invoices ─────────────────────────────────────────── -->
-  <section class="tab-content" id="tab-invoices" role="tabpanel">
-    <div class="section-header"><span class="section-title">Invoices</span></div>
-    <div class="invoice-table-wrap">
-      <table class="invoice-table">
-        <thead><tr><th>Invoice #</th><th>Issued</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead>
-        <tbody id="invoices-tbody"></tbody>
-      </table>
-    </div>
-    <div id="invoice-totals" class="invoice-totals mt-md"></div>
-  </section>
+        <div class="card-grid mb-md" id="stat-cards"></div>
 
-  <!-- ── Meetings ─────────────────────────────────────────── -->
-  <section class="tab-content" id="tab-meetings" role="tabpanel">
-    <div class="section-header"><span class="section-title">Meeting Notes</span></div>
-    <div id="meetings-list" class="meeting-list"></div>
-  </section>
+        <div class="dash-two-col">
+          <div class="dash-two-col-left">
 
-  <!-- ── Files ────────────────────────────────────────────── -->
-  <section class="tab-content" id="tab-files" role="tabpanel">
-    <div class="section-header"><span class="section-title">Deliverables &amp; Files</span></div>
-    <div id="files-grid" class="files-grid"></div>
-  </section>
+            <div id="overview-client-section">
+              <div class="divider"></div>
+              <div class="section-header mt-md">
+                <span class="section-title"><span class="t-en">Timeline</span><span class="t-sep"> / </span><span class="t-es">Cronograma</span></span>
+              </div>
+              <div id="overview-timeline" class="timeline-wrap"></div>
 
-  <!-- ── Perks ─────────────────────────────────────────────── -->
-  <section class="tab-content" id="tab-perks" role="tabpanel">
-    <div class="section-header"><span class="section-title">Client Perks</span></div>
-    <p style="font-size:.88rem;color:var(--text-muted,#8A8F9E);margin-bottom:28px;">
-      These are exclusive benefits for JYB clients &mdash; a thank-you for trusting us with your business.
-    </p>
-    <div id="perks-list"></div>
-  </section>
+              <div id="overview-schedule" class="schedule-banner mb-md mt-md" style="display:none;"></div>
 
-  <!-- ── My Referrals ──────────────────────────────────────── -->
-  <section class="tab-content" id="tab-referrals" role="tabpanel">
-    <div class="section-header" style="justify-content:space-between;">
-      <span class="section-title">My Referrals</span>
-      <button class="btn btn-outline btn-sm" onclick="toggleSubmitForm()">+ Submit a Referral</button>
-    </div>
+              <div id="join-referral-promo"></div>
 
-    <!-- Referral stats -->
-    <div class="ref-stat-grid" id="ref-stat-grid"></div>
+              <div class="divider mt-md"></div>
+              <div class="section-header mt-md">
+                <span class="section-title"><span class="t-en">Programs</span><span class="t-sep"> / </span><span class="t-es">Programas</span></span>
+              </div>
+              <div id="overview-programs" class="programs-grid mb-md"></div>
+            </div>
 
-    <!-- Referral link -->
-    <div class="section-header"><span class="section-title">Your Referral Link</span></div>
-    <div id="ref-link-box" class="ref-link-box mb-md">
-      <span class="ref-link-box__url" id="ref-link-url"></span>
-      <button class="btn btn-outline btn-sm" id="copy-ref-link">Copy Link</button>
-    </div>
+            <div id="overview-referral-section" style="display:none;">
+              <div class="divider"></div>
+              <div class="section-header mt-md">
+                <span class="section-title">Your Referral Link</span>
+              </div>
+              <div id="overview-ref-link" class="mb-md"></div>
+            </div>
 
-    <!-- Submit a referral (inline form, hidden by default) -->
-    <div class="ref-submit-form" id="ref-submit-form">
-      <h3 style="font-family:var(--font-head,'Cormorant Garamond');font-size:1.1rem;font-weight:500;color:var(--text-primary,#F0F2F6);margin:0 0 16px;">Tell Us About Your Referral</h3>
-      <div class="form-grid mb-sm">
-        <div class="form-group">
-          <label class="form-label" for="ref-person-name">Their Name <span style="color:var(--red)">*</span></label>
-          <input id="ref-person-name" type="text" class="form-input" placeholder="Jane Smith">
+          </div>
+
+          <div class="dash-two-col-right">
+
+            <div class="overview-panel" id="overview-client-right">
+              <div class="overview-panel__title"><span class="t-en">Recent Invoice</span><span class="t-sep"> / </span><span class="t-es">Factura Reciente</span></div>
+              <div id="overview-invoice"></div>
+            </div>
+
+            <div class="overview-panel">
+              <div class="overview-panel__title"><span class="t-en">Active Projects</span><span class="t-sep"> / </span><span class="t-es">Proyectos Activos</span></div>
+              <div id="overview-projects" class="project-list"></div>
+            </div>
+
+            <div class="overview-panel">
+              <div class="overview-panel__title"><span class="t-en">Quick Links</span><span class="t-sep"> / </span><span class="t-es">Accesos Directos</span></div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <button class="btn btn-ghost btn-sm" style="justify-content:flex-start;" onclick="activateSection('meetings')">
+                  <span class="t-en">Meeting Notes</span><span class="t-sep"> / </span><span class="t-es">Minutas</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" style="justify-content:flex-start;" onclick="activateSection('messages')">
+                  <span class="t-en">Messages</span><span class="t-sep"> / </span><span class="t-es">Mensajes</span>
+                </button>
+                <button class="btn btn-ghost btn-sm" style="justify-content:flex-start;" onclick="activateSection('preferences')">
+                  <span class="t-en">Settings</span><span class="t-sep"> / </span><span class="t-es">Ajustes</span>
+                </button>
+                <a href="https://calendly.com/jinyerbalance" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+                  <span class="t-en">Book a Call</span><span class="t-sep"> / </span><span class="t-es">Agendar Llamada</span>
+                </a>
+              </div>
+            </div>
+
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="ref-person-email">Their Email</label>
-          <input id="ref-person-email" type="email" class="form-input" placeholder="jane@business.com">
+      </section>
+
+      <!-- ── Meetings ──────────────────────────────────────── -->
+      <section class="section" id="sec-meetings">
+        <h2 class="section-title">Minutas / Meeting Notes</h2>
+        <div id="meetings-list" class="meeting-list"></div>
+      </section>
+
+      <!-- ── Invoices ──────────────────────────────────────── -->
+      <section class="section" id="sec-invoices">
+        <h2 class="section-title">Invoices</h2>
+        <div class="invoice-table-wrap">
+          <table class="invoice-table">
+            <thead><tr><th>Invoice #</th><th>Issued</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="invoices-tbody"></tbody>
+          </table>
         </div>
-      </div>
-      <div class="form-grid mb-sm">
-        <div class="form-group">
-          <label class="form-label" for="ref-business">Business Name</label>
-          <input id="ref-business" type="text" class="form-input" placeholder="Acme Bakery">
+        <div id="invoice-totals" class="invoice-totals mt-md"></div>
+      </section>
+
+      <!-- ── Projects ─────────────────────────────────────── -->
+      <section class="section" id="sec-projects">
+        <h2 class="section-title">All Projects</h2>
+        <div id="projects-list" class="project-list"></div>
+      </section>
+
+      <!-- ── Files ────────────────────────────────────────── -->
+      <section class="section" id="sec-files">
+        <h2 class="section-title">Deliverables &amp; Files</h2>
+        <div id="files-grid" class="files-grid"></div>
+      </section>
+
+      <!-- ── Messages ─────────────────────────────────────── -->
+      <section class="section" id="sec-messages">
+        <h2 class="section-title">Mensajes / Messages</h2>
+        <div id="messages-thread" class="msg-thread"></div>
+        <div class="msg-compose">
+          <textarea id="msg-input" class="form-textarea" placeholder="Escribe tu mensaje / Write your message&hellip;" rows="3"></textarea>
+          <button id="msg-send" class="btn btn-primary mt-xs">Enviar / Send</button>
         </div>
-        <div class="form-group">
-          <label class="form-label" for="ref-service">Service They Need</label>
-          <select id="ref-service" class="form-select">
-            <option value="">Not sure / other</option>
-            <option value="presence">Presence Plan ($999/mo)</option>
-            <option value="partner">Partner Plan ($1,999/mo)</option>
-            <option value="full-service">Full Service ($3,999/mo)</option>
-            <option value="fast-track">Fast Track Website ($2,499)</option>
-            <option value="full-build">Full Build ($5,499)</option>
-          </select>
+      </section>
+
+      <!-- ── Programs ─────────────────────────────────────── -->
+      <section class="section" id="sec-programs">
+        <h2 class="section-title"><span class="t-en">Programs</span><span class="t-sep"> / </span><span class="t-es">Programas</span></h2>
+        <div class="programs-grid" id="sec-programs-grid"></div>
+      </section>
+
+      <!-- ── Newsletter ─────────────────────────────────────── -->
+      <section class="section" id="sec-newsletter">
+        <h2 class="section-title"><span class="t-en">Newsletter</span><span class="t-sep"> / </span><span class="t-es">Bolet&iacute;n</span></h2>
+        <p style="font-size:.82rem;color:var(--text-muted,#8A8F9E);margin-bottom:24px;max-width:520px;line-height:1.6;">
+          <span class="t-en">Control your email preferences and how JYB uses your information in content and marketing.</span>
+          <span class="t-sep"> &middot; </span>
+          <span class="t-es">Controla tus preferencias de correo y c&oacute;mo JYB usa tu informaci&oacute;n en contenido y marketing.</span>
+        </p>
+        <div style="max-width:520px;">
+          <div class="pref-row">
+            <div class="pref-info">
+              <div class="pref-label"><span class="t-en">JYB Newsletter</span><span class="t-sep"> / </span><span class="t-es">Bolet&iacute;n JYB</span></div>
+              <div class="pref-desc"><span class="t-en">Receive updates, tips, and offers from JYB.</span><span class="t-sep"> &middot; </span><span class="t-es">Recibir actualizaciones, consejos y ofertas de JYB.</span></div>
+            </div>
+            <label class="pref-toggle">
+              <input type="checkbox" id="toggle-newsletter2" onchange="savePref('newsletter_opt_in', this.checked)">
+              <span class="pref-slider"></span>
+            </label>
+          </div>
+          <div class="pref-row">
+            <div class="pref-info">
+              <div class="pref-label"><span class="t-en">Featured in Content</span><span class="t-sep"> / </span><span class="t-es">Aparecer en Contenido</span></div>
+              <div class="pref-desc"><span class="t-en">Allow JYB to mention or feature your project in blog posts, case studies, or social media.</span><span class="t-sep"> &middot; </span><span class="t-es">Permitir que JYB mencione o muestre tu proyecto en blogs, estudios de caso o redes sociales.</span></div>
+            </div>
+            <label class="pref-toggle">
+              <input type="checkbox" id="toggle-content2" onchange="savePref('content_opt_in', this.checked)">
+              <span class="pref-slider"></span>
+            </label>
+          </div>
+          <div class="pref-row">
+            <div class="pref-info">
+              <div class="pref-label"><span class="t-en">Featured in Ads</span><span class="t-sep"> / </span><span class="t-es">Aparecer en Anuncios</span></div>
+              <div class="pref-desc"><span class="t-en">Allow JYB to use your project or testimonial in paid advertising.</span><span class="t-sep"> &middot; </span><span class="t-es">Permitir que JYB use tu proyecto o testimonio en publicidad pagada.</span></div>
+            </div>
+            <label class="pref-toggle">
+              <input type="checkbox" id="toggle-ads2" onchange="savePref('ads_opt_in', this.checked)">
+              <span class="pref-slider"></span>
+            </label>
+          </div>
+          <div id="nl-pref-msg" style="font-size:.78rem;color:var(--text-muted,#8A8F9E);margin-top:10px;min-height:18px;"></div>
         </div>
-      </div>
-      <div class="form-group mb-sm">
-        <label class="form-label" for="ref-notes">Notes (optional)</label>
-        <textarea id="ref-notes" class="form-textarea" style="min-height:60px;" placeholder="Anything helpful about them&hellip;"></textarea>
-      </div>
-      <div id="ref-submit-msg" class="msg mb-sm"></div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-ghost" onclick="toggleSubmitForm()">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="submitReferral()">Submit Referral</button>
-      </div>
-    </div>
+      </section>
 
-    <!-- Submissions table -->
-    <div class="section-header mt-md"><span class="section-title">Submission History</span></div>
-    <div id="ref-submissions"></div>
-  </section>
+      <!-- ── Preferences ──────────────────────────────────── -->
+      <section class="section" id="sec-preferences">
+        <h2 class="section-title"><span class="t-en">Settings</span><span class="t-sep"> / </span><span class="t-es">Ajustes</span></h2>
+        <div id="pref-section" style="max-width:560px;">
+          <p style="font-size:.82rem;color:var(--text-muted,#8A8F9E);margin-bottom:18px;line-height:1.6;">
+            <span class="t-en">Control how JYB uses your information. Changes save instantly.</span>
+            <span class="t-sep"> &middot; </span>
+            <span class="t-es">Controla c&oacute;mo JYB usa tu informaci&oacute;n. Los cambios se guardan al instante.</span>
+          </p>
 
-  <!-- ── Commissions ───────────────────────────────────────── -->
-  <section class="tab-content" id="tab-commissions" role="tabpanel">
-    <div class="section-header"><span class="section-title">Commissions</span></div>
-    <div id="commissions-totals" class="ref-stat-grid" style="margin-bottom:24px;"></div>
-    <div class="section-header mt-md"><span class="section-title">Commission History</span></div>
-    <div id="commissions-list"></div>
-    <div id="commissions-payout-info" style="margin-top:20px;font-size:.82rem;color:var(--text-muted,#8A8F9E);"></div>
-  </section>
+          <div class="pref-row">
+            <div class="pref-info">
+              <div class="pref-label"><span class="t-en">Language</span><span class="t-sep"> / </span><span class="t-es">Idioma</span></div>
+              <div class="pref-desc"><span class="t-en">Choose how portal text is displayed.</span><span class="t-sep"> &middot; </span><span class="t-es">Elige c&oacute;mo se muestra el texto del portal.</span></div>
+            </div>
+            <div class="lang-selector" id="lang-selector">
+              <button class="lang-btn" data-lang="en"  onclick="setLang('en')">EN</button>
+              <button class="lang-btn" data-lang="es"  onclick="setLang('es')">ES</button>
+              <button class="lang-btn" data-lang="both" onclick="setLang('both')">EN+ES</button>
+            </div>
+          </div>
+          <div class="pref-row" id="pref-newsletter">
+            <div class="pref-info">
+              <div class="pref-label">Bolet&iacute;n / Newsletter</div>
+              <div class="pref-desc">Receive updates, tips, and offers from JYB. &middot; Recibir actualizaciones, consejos y ofertas de JYB.</div>
+            </div>
+            <label class="pref-toggle">
+              <input type="checkbox" id="toggle-newsletter" onchange="savePref('newsletter_opt_in', this.checked)">
+              <span class="pref-slider"></span>
+            </label>
+          </div>
+          <div class="pref-row" id="pref-content">
+            <div class="pref-info">
+              <div class="pref-label">Contenido / Featured in Content</div>
+              <div class="pref-desc">Allow JYB to mention or feature your project in blog posts, case studies, or social media. &middot; Permitir que JYB mencione o muestre tu proyecto en blogs, estudios de caso o redes sociales.</div>
+            </div>
+            <label class="pref-toggle">
+              <input type="checkbox" id="toggle-content" onchange="savePref('content_opt_in', this.checked)">
+              <span class="pref-slider"></span>
+            </label>
+          </div>
+          <div class="pref-row" id="pref-ads">
+            <div class="pref-info">
+              <div class="pref-label">Anuncios / Featured in Ads</div>
+              <div class="pref-desc">Allow JYB to use your project or testimonial in paid advertising. &middot; Permitir que JYB use tu proyecto o testimonio en publicidad pagada.</div>
+            </div>
+            <label class="pref-toggle">
+              <input type="checkbox" id="toggle-ads" onchange="savePref('ads_opt_in', this.checked)">
+              <span class="pref-slider"></span>
+            </label>
+          </div>
+          <div id="pref-msg" style="font-size:.78rem;color:var(--text-muted,#8A8F9E);margin-top:10px;min-height:18px;"></div>
+        </div>
+      </section>
 
-  <!-- ── My Classes ────────────────────────────────────────── -->
-  <section class="tab-content" id="tab-classes" role="tabpanel">
-    <div class="section-header"><span class="section-title">My Classes</span></div>
-    <p style="font-size:.88rem;color:var(--text-muted,#8A8F9E);margin-bottom:24px;">
-      Your enrolled programs and learning resources. New sessions are added as they become available.
-    </p>
-    <div id="classes-list"></div>
-  </section>
+      <!-- ── Perks ─────────────────────────────────────────── -->
+      <section class="section" id="sec-perks">
+        <h2 class="section-title">Client Perks</h2>
+        <p style="font-size:.88rem;color:var(--text-muted,#8A8F9E);margin-bottom:28px;">
+          These are exclusive benefits for JYB clients &mdash; a thank-you for trusting us with your business.
+        </p>
+        <div id="perks-list"></div>
+      </section>
 
-</div>
+      <!-- ── My Referrals ─────────────────────────────────── -->
+      <section class="section" id="sec-referrals">
+        <div class="section-header" style="justify-content:space-between;margin-bottom:24px;">
+          <h2 class="section-title" style="margin-bottom:0;">My Referrals</h2>
+          <button class="btn btn-outline btn-sm" onclick="toggleSubmitForm()">+ Submit a Referral</button>
+        </div>
+
+        <!-- Referral stats -->
+        <div class="ref-stat-grid" id="ref-stat-grid"></div>
+
+        <!-- Referral link -->
+        <div class="section-header"><span class="section-title">Your Referral Link</span></div>
+        <div id="ref-link-box" class="ref-link-box mb-md">
+          <span class="ref-link-box__url" id="ref-link-url"></span>
+          <button class="btn btn-outline btn-sm" id="copy-ref-link">Copy Link</button>
+        </div>
+
+        <!-- Submit a referral (inline form, hidden by default) -->
+        <div class="ref-submit-form" id="ref-submit-form">
+          <h3 style="font-family:var(--font-head,'Cormorant Garamond');font-size:1.1rem;font-weight:500;color:var(--text-primary,#F0F2F6);margin:0 0 16px;">Tell Us About Your Referral</h3>
+          <div class="form-grid mb-sm">
+            <div class="form-group">
+              <label class="form-label" for="ref-person-name">Their Name <span style="color:var(--red)">*</span></label>
+              <input id="ref-person-name" type="text" class="form-input" placeholder="Jane Smith">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ref-person-email">Their Email</label>
+              <input id="ref-person-email" type="email" class="form-input" placeholder="jane@business.com">
+            </div>
+          </div>
+          <div class="form-grid mb-sm">
+            <div class="form-group">
+              <label class="form-label" for="ref-business">Business Name</label>
+              <input id="ref-business" type="text" class="form-input" placeholder="Acme Bakery">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ref-service">Service They Need</label>
+              <select id="ref-service" class="form-select">
+                <option value="">Not sure / other</option>
+                <option value="presence">Presence Plan ($999/mo)</option>
+                <option value="partner">Partner Plan ($1,999/mo)</option>
+                <option value="full-service">Full Service ($3,999/mo)</option>
+                <option value="fast-track">Fast Track Website ($2,499)</option>
+                <option value="full-build">Full Build ($5,499)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group mb-sm">
+            <label class="form-label" for="ref-notes">Notes (optional)</label>
+            <textarea id="ref-notes" class="form-textarea" style="min-height:60px;" placeholder="Anything helpful about them&hellip;"></textarea>
+          </div>
+          <div id="ref-submit-msg" class="msg mb-sm"></div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" onclick="toggleSubmitForm()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="submitReferral()">Submit Referral</button>
+          </div>
+        </div>
+
+        <!-- Submissions table -->
+        <div class="section-header mt-md"><span class="section-title">Submission History</span></div>
+        <div id="ref-submissions"></div>
+      </section>
+
+      <!-- ── Commissions ───────────────────────────────────── -->
+      <section class="section" id="sec-commissions">
+        <h2 class="section-title">Commissions</h2>
+        <div id="commissions-totals" class="ref-stat-grid" style="margin-bottom:24px;"></div>
+        <div class="section-header mt-md"><span class="section-title">Commission History</span></div>
+        <div id="commissions-list"></div>
+        <div id="commissions-payout-info" style="margin-top:20px;font-size:.82rem;color:var(--text-muted,#8A8F9E);"></div>
+      </section>
+
+      <!-- ── Store / Orders ────────────────────────────────── -->
+      <section class="section" id="sec-store">
+        <h2 class="section-title"><span class="t-en">My Orders</span><span class="t-sep"> / </span><span class="t-es">Mis Pedidos</span></h2>
+        <p style="font-size:.82rem;color:var(--text-muted,#8A8F9E);margin-bottom:20px;line-height:1.6;max-width:520px;">
+          <span class="t-en">Your JYB store order history. Track shipments and download digital products below.</span>
+          <span class="t-sep"> &middot; </span>
+          <span class="t-es">Historial de pedidos de la tienda JYB. Rastrea env&iacute;os y descarga productos digitales.</span>
+        </p>
+        <div id="orders-list"></div>
+      </section>
+
+      <!-- ── My Classes ────────────────────────────────────── -->
+      <section class="section" id="sec-classes">
+        <h2 class="section-title">My Classes</h2>
+        <p style="font-size:.88rem;color:var(--text-muted,#8A8F9E);margin-bottom:24px;">
+          Your enrolled programs and learning resources. New sessions are added as they become available.
+        </p>
+        <div id="classes-list"></div>
+      </section>
+
+    </div><!-- /#dash-sections -->
+
+    <!-- ── Quick Links footer ───────────────────────────── -->
+    <footer id="portal-footer">
+      <div class="footer-label"><span class="t-en">Quick Links</span><span class="t-sep"> / </span><span class="t-es">Accesos Directos</span></div>
+      <nav class="footer-links">
+        <a class="footer-link" href="#" onclick="activateSection('meetings');return false;">
+          <span class="t-en">Meeting Notes</span><span class="t-sep"> / </span><span class="t-es">Minutas</span>
+        </a>
+        <span class="footer-sep">&middot;</span>
+        <a class="footer-link" href="#" onclick="activateSection('messages');return false;">
+          <span class="t-en">Messages</span><span class="t-sep"> / </span><span class="t-es">Mensajes</span>
+        </a>
+        <span class="footer-sep">&middot;</span>
+        <a class="footer-link" href="/settings.html">
+          <span class="t-en">Settings</span><span class="t-sep"> / </span><span class="t-es">Ajustes</span>
+        </a>
+        <span class="footer-sep">&middot;</span>
+        <a class="footer-link" href="https://calendly.com/jinyerbalance" target="_blank" rel="noopener">
+          <span class="t-en">Book a Call</span><span class="t-sep"> / </span><span class="t-es">Agendar Llamada</span>
+        </a>
+      </nav>
+    </footer>
+
+  </main>
+</div><!-- /#dash-layout -->
 
 <script src="/assets/js/portal.js"></script>
 <script>
@@ -231,60 +579,336 @@
   var isClient   = hasRole('client');
   var isReferral = hasRole('referral');
   var isStudent  = hasRole('student');
+  var isStore    = hasRole('store');
 
   // ── DOM refs ────────────────────────────────────────────
   var navLabel    = document.getElementById('nav-client-label');
   var spinner     = document.getElementById('global-spinner');
   var errorBox    = document.getElementById('global-error');
   var errorMsg    = document.getElementById('global-error-msg');
-  var tabContents = document.getElementById('tab-contents');
-  var tabBar      = document.getElementById('tab-bar');
 
-  navLabel.textContent = client.name || client.email || 'Portal';
+  navLabel.textContent = (client.name || client.email || 'Portal').toUpperCase();
 
-  // ── Build tab bar ────────────────────────────────────────
-  var tabs = [{ id: 'overview', label: 'Overview' }];
-  if (isClient) {
-    tabs.push(
-      { id: 'projects',    label: 'Projects' },
-      { id: 'invoices',    label: 'Invoices' },
-      { id: 'meetings',    label: 'Meetings' },
-      { id: 'files',       label: 'Files' },
-      { id: 'perks',       label: 'Perks' }
-    );
+  // ── Build sidebar navigation ──────────────────────────────────
+  var sidebar = document.getElementById('dash-sidebar');
+
+  function buildNavItem(id, icon, en, es, locked) {
+    var item = document.createElement('div');
+    item.className = 'nav-item' + (locked ? ' locked' : '');
+    item.id = 'nav-' + id;
+    item.dataset.section = id;
+    item.innerHTML = '<span class="nav-icon">' + icon + '</span>' +
+      '<span class="t-en">' + en + '</span>' +
+      '<span class="t-sep"> / </span>' +
+      '<span class="t-es">' + es + '</span>';
+    if (!locked) item.addEventListener('click', function () { activateSection(id); });
+    sidebar.appendChild(item);
+    return item;
   }
+
+  function buildNavLabel(en, es) {
+    var el = document.createElement('div');
+    el.className = 'nav-section-label';
+    el.innerHTML = '<span class="t-en">' + en + '</span><span class="t-sep"> / </span><span class="t-es">' + es + '</span>';
+    sidebar.appendChild(el);
+  }
+
+  // Always-on top item
+  buildNavItem('overview', '&#8862;', 'Overview', 'Resumen', false);
+
+  if (isClient) {
+    buildNavLabel('Your Project', 'Tu Proyecto');
+    buildNavItem('meetings',    '&#9312;', 'Meetings',  'Reuni&oacute;n',   false);
+    buildNavItem('invoices',    '&#9313;', 'Invoice',   'Factura',   true);
+    buildNavItem('projects',    '&#9314;', 'Projects',  'Proyectos', true);
+    buildNavItem('files',       '&#9315;', 'Files',     'Archivos',  true);
+  }
+
+  buildNavLabel('Connect', 'Comunicaci&oacute;n');
+  buildNavItem('messages', '&#9993;', 'Messages', 'Mensajes', false);
+
+  if (isClient) {
+    buildNavLabel('Programs', 'Programas');
+    buildNavItem('programs',    '&#9672;', 'Referral Partner', 'Socio Referido', false);
+    buildNavItem('newsletter',  '&#9993;', 'Newsletter', 'Bolet&iacute;n', false);
+  }
+
+  buildNavLabel('Account', 'Cuenta');
+  if (isClient) buildNavItem('perks', '&#9733;', 'Perks', 'Beneficios', false);
+
   if (isReferral) {
-    tabs.push(
-      { id: 'referrals',   label: 'My Referrals' },
-      { id: 'commissions', label: 'Commissions' }
-    );
+    buildNavLabel('Referrals', 'Referidos');
+    buildNavItem('referrals',   '&#9678;', 'My Referrals', 'Mis Referidos', false);
+    buildNavItem('commissions', '$', 'Commissions',  'Comisiones',    false);
   }
   if (isStudent) {
-    tabs.push({ id: 'classes', label: 'My Classes' });
+    buildNavLabel('Learning', 'Aprendizaje');
+    buildNavItem('classes', '&#9689;', 'My Classes', 'Mis Clases', false);
+  }
+  if (isStore) {
+    buildNavLabel('Store', 'Tienda');
+    buildNavItem('store', '&#9749;', 'My Orders', 'Mis Pedidos', false);
   }
 
-  tabs.forEach(function (t) {
-    var btn = document.createElement('button');
-    btn.className = 'tab-btn';
-    btn.setAttribute('role', 'tab');
-    btn.dataset.tab = t.id;
-    btn.textContent = t.label;
-    btn.addEventListener('click', function () { activateTab(t.id); });
-    tabBar.appendChild(btn);
-  });
+  // ── Global data store (populated by loadAll) ─────────────
+  var _stepData    = { meetings: [], invoices: [], projects: [] };
+  var _allMeetings = [];
+  var _allInvoices = [];
+  var _allProjects = [];
+  var _allFiles    = [];
+  var _allOrders   = [];
 
-  function activateTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.tab === tab);
+  // ── Context tab helper ────────────────────────────────────
+  window.setCtxActive = function (el) {
+    if (!el) return;
+    el.closest('#context-tabs').querySelectorAll('.ctx-tab').forEach(function(t) {
+      t.classList.remove('active');
     });
-    document.querySelectorAll('.tab-content').forEach(function (p) {
-      p.classList.toggle('active', p.id === 'tab-' + tab);
-    });
+    el.classList.add('active');
+  };
+
+  // ── Filter functions (re-render section content) ──────────
+  window.filterMeetings = function (filter) {
+    var el = document.getElementById('meetings-list');
+    if (!el) return;
+    if (filter === 'actions') {
+      // Extract all action items from every meeting
+      var allActions = [];
+      _allMeetings.forEach(function(m) {
+        if (!m.action_items) return;
+        try {
+          var items = typeof m.action_items === 'string' ? JSON.parse(m.action_items) : m.action_items;
+          if (Array.isArray(items)) items.forEach(function(a) {
+            var text = typeof a === 'string' ? a : (a.text || a.item || '');
+            if (text) allActions.push({ text: text, date: m.meeting_date });
+          });
+        } catch(e) {}
+      });
+      if (allActions.length === 0) {
+        el.innerHTML = '<div class="empty-state"><p><span class="t-en">No action items yet.</span><span class="t-sep"> / </span><span class="t-es">Sin pasos pendientes.</span></p></div>';
+      } else {
+        el.innerHTML = '<div style="max-width:560px;">' +
+          allActions.map(function(a) {
+            return '<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);">' +
+              '<span style="width:14px;height:14px;border:1.5px solid rgba(255,255,255,.3);border-radius:2px;flex-shrink:0;margin-top:2px;display:inline-block;"></span>' +
+              '<span style="font-size:.88rem;color:#F0F2F6;">' + JYB.escapeHtml(a.text) + '</span>' +
+              '<span style="font-size:.72rem;color:#6b7280;margin-left:auto;white-space:nowrap;">' + JYB.formatDate(a.date) + '</span>' +
+            '</div>';
+          }).join('') + '</div>';
+      }
+    } else {
+      renderMeetings(_allMeetings);
+    }
+  };
+
+  window.filterInvoices = function (filter) {
+    var filtered = filter === 'unpaid'
+      ? _allInvoices.filter(function(i) { return i.status !== 'paid' && i.status !== 'cancelled'; })
+      : filter === 'paid'
+      ? _allInvoices.filter(function(i) { return i.status === 'paid'; })
+      : _allInvoices;
+    renderInvoices(filtered);
+  };
+
+  window.filterProjects = function (filter) {
+    var filtered = filter === 'active'
+      ? _allProjects.filter(function(p) { return p.status !== 'completed' && p.status !== 'cancelled'; })
+      : _allProjects;
+    renderProjects(filtered);
+  };
+
+  window.filterFiles = function (filter) {
+    var el = document.getElementById('files-grid');
+    if (!el) return;
+    if (filter === 'request') {
+      el.innerHTML =
+        '<div style="max-width:520px;">' +
+          '<p style="font-size:.84rem;color:#9ca3af;margin-bottom:18px;line-height:1.6;">' +
+            '<span class="t-en">Need to send us a file or request a deliverable? Describe what you need below and we\'ll follow up.</span>' +
+            '<span class="t-sep"> &middot; </span>' +
+            '<span class="t-es">&iquest;Necesitas enviarnos un archivo? Desc\u00edbelo abajo.</span>' +
+          '</p>' +
+          '<textarea id="file-request-text" class="form-textarea" style="min-height:80px;" placeholder="e.g. Sending you the updated logo files / Enviando los archivos del logo actualizados..."></textarea>' +
+          '<button class="btn btn-outline btn-sm mt-sm" onclick="sendFileRequest()"><span class="t-en">Send Request</span><span class="t-sep"> / </span><span class="t-es">Enviar Solicitud</span></button>' +
+          '<div id="file-request-msg" class="msg mt-xs"></div>' +
+        '</div>';
+    } else {
+      renderFiles(_allFiles);
+    }
+  };
+
+  window.sendFileRequest = async function() {
+    var text  = (document.getElementById('file-request-text') || {}).value || '';
+    var msgEl = document.getElementById('file-request-msg');
+    if (!text.trim()) return;
+    try {
+      await JYB.clientFetch('/api/messages', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: '[FILE REQUEST] ' + text }),
+      });
+      JYB.showMsg(msgEl, 'Sent! / Enviado. We\'ll be in touch shortly.', 'success');
+      document.getElementById('file-request-text').value = '';
+    } catch(e) {
+      JYB.showMsg(msgEl, 'Error sending request.', 'error');
+    }
+  };
+
+  window.filterOrders = function(filter) {
+    var el = document.getElementById('orders-list');
+    if (!el) return;
+    var list = _allOrders;
+    if (!list || list.length === 0) {
+      el.innerHTML = '<p style="font-size:.85rem;color:var(--text-muted,#8A8F9E);">' +
+        '<span class="t-en">No orders yet.</span><span class="t-sep"> &middot; </span><span class="t-es">Sin pedidos a\u00fan.</span></p>';
+      return;
+    }
+    el.innerHTML = list.map(function(o) {
+      var statusColor = o.status === 'delivered' ? 'var(--green,#4ade80)' :
+                        o.status === 'shipped'   ? 'var(--blue,#60a5fa)' :
+                        o.status === 'cancelled' ? 'var(--red,#f87171)' : 'var(--amber,#fbbf24)';
+      var total = o.total_cents ? ('$' + (o.total_cents / 100).toFixed(2)) : '—';
+      var items = '';
+      try { items = o.items ? JSON.parse(o.items).map(function(i){return JYB.escapeHtml(i);}).join(', ') : ''; } catch(e) {}
+      return '<div class="card" style="margin-bottom:12px;padding:18px 20px;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px;">' +
+          '<div>' +
+            '<div style="font-weight:600;font-size:.9rem;color:#F0F2F6;">' + JYB.escapeHtml(o.order_ref || 'Order') + '</div>' +
+            (items ? '<div style="font-size:.78rem;color:#8A8F9E;margin-top:2px;">' + items + '</div>' : '') +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:12px;">' +
+            '<span style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:' + statusColor + ';">' + JYB.escapeHtml(o.status) + '</span>' +
+            '<span style="font-size:.9rem;color:#F0F2F6;">' + total + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;">' +
+          (o.tracking_url ? '<a href="' + JYB.escapeHtml(o.tracking_url) + '" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><span class="t-en">Track Shipment</span><span class="t-sep"> / </span><span class="t-es">Rastrear</span></a>' : '') +
+          (o.receipt_url  ? '<a href="' + JYB.escapeHtml(o.receipt_url) + '" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><span class="t-en">Receipt</span><span class="t-sep"> / </span><span class="t-es">Recibo</span></a>' : '') +
+        '</div>' +
+        '<div style="font-size:.72rem;color:#8A8F9E;margin-top:8px;">' + JYB.escapeHtml(o.created_at ? o.created_at.slice(0,10) : '') + '</div>' +
+      '</div>';
+    }).join('');
+  };
+
+  // ── Build context tabs per section ─────────────────────────
+  function buildContextTabs(id) {
+    var ctxEl = document.getElementById('context-tabs');
+    if (!ctxEl) return;
+
+    var tabSets = {
+      overview: isClient ? {
+        type: 'stages',
+        stages: [
+          { label:'Kickoff',   labelEs:'Inicio',    done: _stepData.meetings.length>0 || _stepData.invoices.length>0 },
+          { label:'Meeting',   labelEs:'Reuni\u00f3n', done: _stepData.meetings.length>0 },
+          { label:'Invoice',   labelEs:'Factura',   done: _stepData.invoices.filter(function(i){return i.status==='paid';}).length>0,
+            current: _stepData.invoices.length>0 && _stepData.invoices.filter(function(i){return i.status==='paid';}).length===0 },
+          { label:'Project',   labelEs:'Proyecto',  done: _stepData.projects.filter(function(p){return p.status==='completed';}).length>0,
+            current: _stepData.projects.length>0 },
+          { label:'Delivery',  labelEs:'Entrega',   done: false, current: false },
+        ]
+      } : null,
+      meetings: isClient ? { type:'tabs', items:[
+        { label:'All Notes',       labelEs:'Todas las Notas',   fn:'filterMeetings("all")',     default:true },
+        { label:'Action Items',    labelEs:'Pr\u00f3ximos Pasos', fn:'filterMeetings("actions")' },
+        { label:'Schedule a Call', labelEs:'Agendar Llamada',   fn:'window.open("https://calendly.com/jinyerbalance","_blank")' },
+      ]} : null,
+      invoices: isClient ? { type:'tabs', items:[
+        { label:'All',    labelEs:'Todas',       fn:'filterInvoices("all")',    default:true },
+        { label:'Unpaid', labelEs:'Sin Pagar',   fn:'filterInvoices("unpaid")' },
+        { label:'Paid',   labelEs:'Pagadas',     fn:'filterInvoices("paid")' },
+      ]} : null,
+      projects: isClient ? { type:'tabs', items:[
+        { label:'Active',       labelEs:'Activos', fn:'filterProjects("active")', default:true },
+        { label:'All Projects', labelEs:'Todos',   fn:'filterProjects("all")' },
+      ]} : null,
+      files: isClient ? { type:'tabs', items:[
+        { label:'My Files',       labelEs:'Mis Archivos',       fn:'filterFiles("files")',   default:true },
+        { label:'Request / Upload', labelEs:'Solicitar Archivo', fn:'filterFiles("request")' },
+      ]} : null,
+      programs: isClient ? { type:'tabs', items:[
+        { label:'Programs',   labelEs:'Programas', fn:'activateSection("programs")',   navId:'programs',   default:true },
+        { label:'Newsletter', labelEs:'Bolet\u00edn', fn:'activateSection("newsletter")', navId:'newsletter' },
+      ]} : null,
+      newsletter: isClient ? { type:'tabs', items:[
+        { label:'Programs',   labelEs:'Programas', fn:'activateSection("programs")',   navId:'programs' },
+        { label:'Newsletter', labelEs:'Bolet\u00edn', fn:'activateSection("newsletter")', navId:'newsletter', default:true },
+      ]} : null,
+      referrals: isReferral ? { type:'tabs', items:[
+        { label:'My Referrals', labelEs:'Mis Referidos', fn:'activateSection("referrals")',   navId:'referrals',   default:true },
+        { label:'Commissions',  labelEs:'Comisiones',    fn:'activateSection("commissions")', navId:'commissions' },
+      ]} : null,
+      commissions: isReferral ? { type:'tabs', items:[
+        { label:'My Referrals', labelEs:'Mis Referidos', fn:'activateSection("referrals")',   navId:'referrals' },
+        { label:'Commissions',  labelEs:'Comisiones',    fn:'activateSection("commissions")', navId:'commissions', default:true },
+      ]} : null,
+      store: isStore ? { type:'tabs', items:[
+        { label:'My Orders',    labelEs:'Mis Pedidos', fn:'filterOrders("all")',          default:true },
+        { label:'Browse Store', labelEs:'Ver Tienda',  fn:'window.open("https://jinyerbalance.com/store","_blank")' },
+      ]} : null,
+    };
+
+    var def = tabSets[id];
+    if (!def) { ctxEl.innerHTML = ''; ctxEl.classList.remove('visible'); return; }
+
+    if (def.type === 'stages') {
+      ctxEl.innerHTML = def.stages.map(function(s, i) {
+        var cls = 'ctx-tab' + (s.done?' done':'') + (!s.done&&s.current?' active':'');
+        var num = s.done ? '&#10003;' : (i + 1);
+        var sep = i < def.stages.length-1 ? '<div class="ctx-separator"></div>' : '';
+        return '<div class="'+cls+'" style="cursor:default;pointer-events:none;">' +
+          '<span class="ctx-tab-circle">'+num+'</span>' +
+          '<span class="t-en">'+s.label+'</span><span class="t-sep"> / </span><span class="t-es">'+s.labelEs+'</span>' +
+          '</div>'+sep;
+      }).join('');
+
+    } else {
+      ctxEl.innerHTML = def.items.map(function(t, i) {
+        var isActive = t.navId ? t.navId === id : !!t.default;
+        var cls = 'ctx-tab' + (isActive?' active':'');
+        var sep = i < def.items.length-1 ? '<div class="ctx-separator"></div>' : '';
+        var onclick = 'onclick="'+t.fn+';setCtxActive(this)"';
+        return '<div class="'+cls+'" '+onclick+'>' +
+          '<span class="t-en">'+t.label+'</span><span class="t-sep"> / </span><span class="t-es">'+t.labelEs+'</span>' +
+          '</div>'+sep;
+      }).join('');
+    }
+
+    ctxEl.classList.add('visible');
   }
-  activateTab('overview');
+
+  function activateSection(id) {
+    document.querySelectorAll('.nav-item').forEach(function (n) {
+      n.classList.toggle('active', n.dataset.section === id);
+    });
+    document.querySelectorAll('.section').forEach(function (s) {
+      s.classList.toggle('active', s.id === 'sec-' + id);
+    });
+    if (id === 'messages') loadMessages();
+    buildContextTabs(id);
+  }
+
+  // Unlock steps after data loads
+  function unlockSteps(meetings, invoices, projects) {
+    function unlock(id) {
+      var item = document.getElementById('nav-' + id);
+      if (!item) return;
+      item.classList.remove('locked');
+      item.addEventListener('click', function () { activateSection(id); });
+    }
+    if (meetings.length > 0)  unlock('invoices');
+    if (invoices.length > 0)  unlock('projects');
+    if (projects.length > 0)  unlock('files');
+  }
+
+  activateSection('overview');
 
   // ── Show/hide overview sections by role ─────────────────
-  if (!isClient) document.getElementById('overview-client-section').style.display = 'none';
+  if (!isClient) {
+    var ocSec = document.getElementById('overview-client-section');
+    if (ocSec) ocSec.style.display = 'none';
+    var ocRight = document.getElementById('overview-client-right');
+    if (ocRight) ocRight.style.display = 'none';
+  }
 
   // ── Load all data ────────────────────────────────────────
   async function loadAll() {
@@ -303,18 +927,44 @@
           JYB.clientFetch('/api/client/' + client.id + '/referral').then(function (d) { refData = d; })
         );
       }
+      var ordersData = null;
+      if (isStore) {
+        promises.push(
+          JYB.clientFetch('/api/client/' + client.id + '/orders').then(function (d) { ordersData = d; })
+        );
+      }
 
       await Promise.all(promises);
 
       spinner.style.display = 'none';
-      tabContents.style.display = '';
 
       renderOverview(dashData, refData);
       if (dashData) {
-        renderProjects(dashData.projects || []);
-        renderInvoices(dashData.invoices || []);
-        renderMeetings(dashData.meetings || []);
-        renderFiles(dashData.deliverables || []);
+        // Store globally for filter functions
+        _allMeetings = dashData.meetings    || [];
+        _allInvoices = dashData.invoices    || [];
+        _allProjects = dashData.projects    || [];
+        _allFiles    = dashData.deliverables || [];
+
+        if (ordersData) {
+          _allOrders = ordersData.orders || [];
+          filterOrders('all');
+        }
+
+        renderProjects(_allProjects);
+        renderInvoices(_allInvoices);
+        renderMeetings(_allMeetings);
+        renderFiles(_allFiles);
+
+        if (isClient) {
+          _stepData = { meetings: _allMeetings, invoices: _allInvoices, projects: _allProjects };
+          unlockSteps(_allMeetings, _allInvoices, _allProjects);
+          renderTimeline(_allMeetings, _allInvoices, _allProjects);
+          renderPrograms(isReferral);
+          renderScheduleCTA();
+          renderPreferences(dashData.preferences || {});
+          buildContextTabs('overview'); // refresh overview stage tabs with real data
+        }
       }
       if (isClient)   renderPerks();
       if (isReferral) renderReferral(refData || { submissions: [], commissions: [], stats: {} });
@@ -323,6 +973,7 @@
     } catch (e) {
       spinner.style.display = 'none';
       errorBox.style.display = 'block';
+      errorBox.classList.add('active');
       JYB.showMsg(errorMsg, e.message || 'Failed to load portal. Please try again.', 'error');
     }
   }
@@ -351,7 +1002,7 @@
       statCards.push(statCard('Unpaid Invoices',  unpaid.length,  unpaidTotal > 0 ? JYB.formatMoney(unpaidTotal) + ' outstanding' : null, unpaid.length > 0 ? 'amber' : null));
       statCards.push(statCard('Action Items',     actionCount,    actionCount > 0 ? 'From last meeting' : 'All clear', actionCount > 0 ? 'amber' : 'green'));
 
-      // Overview projects + invoice
+      // Overview projects + invoice (right column panels)
       var op = document.getElementById('overview-projects');
       if (active.length === 0) {
         op.innerHTML = '<div class="empty-state"><p>No active projects right now.</p></div>';
@@ -480,23 +1131,92 @@
   // ── Meetings ─────────────────────────────────────────────
   function renderMeetings(meetings) {
     var el = document.getElementById('meetings-list');
-    if (meetings.length === 0) { el.innerHTML = '<div class="empty-state"><p>No meeting notes yet.</p></div>'; return; }
+    if (meetings.length === 0) { el.innerHTML = '<div class="empty-state"><p>No meeting notes yet. / A&uacute;n no hay minutas.</p></div>'; return; }
     el.innerHTML = meetings.map(function (m) {
-      var actionItems = '';
+
+      // ── Action items ──────────────────────────────────────
+      var actionHtml = '';
       if (m.action_items) {
         try {
           var items = typeof m.action_items === 'string' ? JSON.parse(m.action_items) : m.action_items;
           if (Array.isArray(items) && items.length > 0) {
-            actionItems = '<div class="action-items-label">Action Items</div><ul class="action-items-list">' +
-              items.map(function (a) {
-                return '<li class="action-item">' + JYB.escapeHtml(typeof a === 'string' ? a : (a.text || a.item || '')) + '</li>';
-              }).join('') + '</ul>';
+            actionHtml = minutaSection('Pr&oacute;ximos Pasos / Next Steps',
+              '<ul style="margin:4px 0 0;padding-left:18px;">' +
+              items.map(function(a){
+                var t = typeof a === 'string' ? a : (a.text || a.item || '');
+                return '<li style="font-size:13px;margin-bottom:3px;">' + JYB.escapeHtml(t) + '</li>';
+              }).join('') + '</ul>');
           }
-        } catch (e) {}
+        } catch(e){}
       }
-      return '<div class="meeting-card"><div class="meeting-date">' + JYB.formatDate(m.meeting_date) + '</div>' +
-        '<div class="meeting-summary">' + JYB.escapeHtml(m.summary) + '</div>' + actionItems + '</div>';
+
+      // ── Body: try JSON minuta, else smart plain text ──────
+      var bodyHtml = '';
+      var purposeHtml = '';
+      try {
+        var parsed = typeof m.summary === 'string' ? JSON.parse(m.summary) : m.summary;
+        if (parsed && parsed._type === 'minuta') {
+          if (parsed.attendees) purposeHtml += '<div style="font-size:12px;color:var(--text-muted,#8A8F9E);margin-bottom:4px;">Asistentes: ' + JYB.escapeHtml(parsed.attendees) + '</div>';
+          if (parsed.purpose)   purposeHtml += '<div style="font-size:13px;font-style:italic;color:var(--text-muted,#8A8F9E);margin-bottom:12px;">' + JYB.escapeHtml(parsed.purpose) + '</div>';
+          if (parsed.topics && parsed.topics.length)    bodyHtml += minutaSection('Temas Tratados / Topics Discussed', bulletList(parsed.topics));
+          if (parsed.decisions && parsed.decisions.length) bodyHtml += minutaSection('Decisiones / Decisions Made', bulletList(parsed.decisions));
+        } else {
+          throw new Error('not minuta');
+        }
+      } catch(e) {
+        // Plain text fallback — detect "- " bullet lines and convert to list
+        var raw = (m.summary || '').trim();
+        var lines = raw.split(/\n/);
+        var isBulletBlock = lines.some(function(l){ return l.trim().startsWith('- '); });
+        if (isBulletBlock) {
+          var groups = [];
+          var currentLabel = null;
+          var currentItems = [];
+          lines.forEach(function(line){
+            var t = line.trim();
+            if (!t) return;
+            if (t.startsWith('- ')) {
+              currentItems.push(t.slice(2));
+            } else {
+              if (currentItems.length && currentLabel !== null) {
+                groups.push({ label: currentLabel, items: currentItems.slice() });
+                currentItems = [];
+              }
+              currentLabel = t;
+            }
+          });
+          if (currentItems.length) groups.push({ label: currentLabel, items: currentItems });
+          if (groups.length) {
+            bodyHtml = groups.map(function(g){
+              return g.label
+                ? minutaSection(g.label, bulletList(g.items))
+                : bulletList(g.items);
+            }).join('');
+          } else {
+            bodyHtml = '<ul style="margin:0;padding-left:18px;">' + currentItems.map(function(i){ return '<li style="font-size:13px;margin-bottom:3px;">' + JYB.escapeHtml(i) + '</li>'; }).join('') + '</ul>';
+          }
+        } else {
+          bodyHtml = '<div style="font-size:13px;white-space:pre-wrap;">' + JYB.escapeHtml(raw) + '</div>';
+        }
+      }
+
+      return '<div class="meeting-card">' +
+        '<div class="meeting-date">' + JYB.formatDate(m.meeting_date) + '</div>' +
+        purposeHtml + bodyHtml + actionHtml +
+      '</div>';
     }).join('');
+
+    function minutaSection(label, content) {
+      return '<div style="margin-bottom:12px;">' +
+        '<div style="font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted,#8A8F9E);margin-bottom:5px;">' + label + '</div>' +
+        content +
+      '</div>';
+    }
+    function bulletList(arr) {
+      return '<ul style="margin:0;padding-left:18px;">' +
+        arr.map(function(t){ return '<li style="font-size:13px;margin-bottom:3px;">' + JYB.escapeHtml(t) + '</li>'; }).join('') +
+      '</ul>';
+    }
   }
 
   // ── Files ────────────────────────────────────────────────
@@ -517,6 +1237,213 @@
   var CLASS_CATALOG = {
     'spanish-classes': { name: 'Spanish Classes', desc: 'Conversational Spanish for everyday life. Weekly sessions, bilingual materials.', url: 'https://jinyerbalance.com/classes/spanish' },
     'aiconics-101':    { name: 'Aiconics 101', desc: 'Introduction to AI tools for small business owners. Self-paced.', url: 'https://jinyerbalance.com/classes/aiconics' },
+  };
+
+  // ── Language system ────────────────────────────────────────
+  window.setLang = async function (lang) {
+    document.body.className = document.body.className.replace(/\blang-\S+/g, '').trim();
+    document.body.classList.add('lang-' + lang);
+    document.querySelectorAll('.lang-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.lang === lang);
+    });
+    // persist
+    try {
+      await JYB.clientFetch('/api/client/' + client.id + '/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language_pref: lang })
+      });
+    } catch (e) {}
+  };
+
+  function applyLang(lang) {
+    var l = lang || 'both';
+    document.body.classList.add('lang-' + l);
+    document.querySelectorAll('.lang-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.lang === l);
+    });
+  }
+
+  // ── Timeline ──────────────────────────────────────────────
+  function renderTimeline(meetings, invoices, projects) {
+    var el = document.getElementById('overview-timeline');
+    if (!el) return;
+
+    var events = [];
+    var today = new Date(); today.setHours(0,0,0,0);
+
+    meetings.forEach(function (m) {
+      if (m.meeting_date) events.push({ date: new Date(m.meeting_date), label: 'Reuni\u00f3n', labelEn: 'Meeting', type: 'meeting', done: true });
+    });
+    invoices.forEach(function (i) {
+      if (i.due_date) {
+        var d = new Date(i.due_date); var paid = i.status === 'paid';
+        events.push({ date: d, label: 'Factura', labelEn: 'Invoice', sub: i.invoice_number, type: paid ? 'done' : (d < today ? 'overdue' : 'upcoming'), done: paid });
+      }
+    });
+    projects.forEach(function (p) {
+      if (p.due_date) {
+        var d = new Date(p.due_date); var done = p.status === 'completed';
+        events.push({ date: d, label: 'Proyecto', labelEn: 'Project', sub: p.title, type: done ? 'done' : (d < today ? 'overdue' : 'upcoming'), done: done });
+      }
+      if (p.start_date) events.push({ date: new Date(p.start_date), label: 'Inicio', labelEn: 'Start', type: 'meeting', done: true });
+    });
+
+    if (events.length === 0) {
+      el.innerHTML = '<p style="font-size:.82rem;color:var(--text-muted,#8A8F9E);">No dates to display yet. / A&uacute;n no hay fechas que mostrar.</p>';
+      return;
+    }
+
+    events.sort(function (a,b) { return a.date - b.date; });
+    var min = events[0].date.getTime();
+    var max = events[events.length-1].date.getTime();
+    var range = max - min || 1;
+
+    var dotsHtml = events.map(function (ev) {
+      var pct = ((ev.date.getTime() - min) / range * 90 + 5).toFixed(1);
+      var cls = ev.done ? 'done' : ev.type;
+      var dateStr = ev.date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      return '<div class="timeline-dot ' + cls + '" style="left:' + pct + '%;">' +
+        '<div class="timeline-dot__circle"></div>' +
+        '<div class="timeline-dot__label"><span class="t-en">' + ev.labelEn + '</span><span class="t-sep"> / </span><span class="t-es">' + ev.label + '</span></div>' +
+        (ev.sub ? '<div class="timeline-dot__date" style="font-size:.65rem;max-width:80px;overflow:hidden;text-overflow:ellipsis;">' + JYB.escapeHtml(ev.sub.substring(0,18)) + '</div>' : '') +
+        '<div class="timeline-dot__date">' + dateStr + '</div>' +
+      '</div>';
+    }).join('');
+
+    var fillPct = Math.max(5, Math.min(95, ((today.getTime() - min) / range * 90 + 5)));
+
+    el.innerHTML =
+      '<div style="position:relative;min-height:90px;">' +
+        '<div class="timeline-track">' +
+          '<div class="timeline-fill" style="width:' + fillPct + '%;"></div>' +
+        '</div>' +
+        '<div class="timeline-events" style="position:relative;height:80px;">' + dotsHtml + '</div>' +
+      '</div>' +
+      '<div class="timeline-legend">' +
+        '<div class="timeline-legend-item"><div class="legend-dot" style="background:rgba(255,255,255,.5);"></div><span class="t-en">Done</span><span class="t-sep"> / </span><span class="t-es">Completado</span></div>' +
+        '<div class="timeline-legend-item"><div class="legend-dot" style="background:#F59E0B;"></div><span class="t-en">Upcoming</span><span class="t-sep"> / </span><span class="t-es">Pr&oacute;ximo</span></div>' +
+        '<div class="timeline-legend-item"><div class="legend-dot" style="background:#EF4444;"></div><span class="t-en">Overdue</span><span class="t-sep"> / </span><span class="t-es">Vencido</span></div>' +
+      '</div>';
+  }
+
+  // ── Programs ──────────────────────────────────────────────
+  function renderPrograms(isReferralMember) {
+    var el = document.getElementById('overview-programs');
+    if (!el) return;
+
+    var referralCard =
+      '<div class="program-card">' +
+        '<div class="program-card__badge"><span class="t-en">Referral Partner</span><span class="t-sep"> &middot; </span><span class="t-es">Socio Referido</span></div>' +
+        '<div class="program-card__title"><span class="t-en">Earn While You Refer</span><span class="t-sep"><br></span><span class="t-es">Gana Refiriendo</span></div>' +
+        '<div class="program-card__desc">' +
+          '<span class="t-en">Refer a business to JYB. Earn 15% of their first invoice + 10% every month they stay on retainer.</span>' +
+          '<span class="t-sep"> &middot; </span>' +
+          '<span class="t-es">Refiere un negocio a JYB. Gana 15% de su primera factura + 10% cada mes que permanezcan en retenci&oacute;n.</span>' +
+        '</div>' +
+        '<div class="program-card__price">15% <span>+ 10%/mo</span></div>' +
+        (isReferralMember
+          ? '<button class="btn btn-outline btn-sm" onclick="activateSection(\'referrals\')"><span class="t-en">View My Referrals</span><span class="t-sep"> / </span><span class="t-es">Ver Mis Referidos</span></button>'
+          : '<button class="btn btn-outline btn-sm" onclick="openJoinReferralModal()"><span class="t-en">Apply to Join</span><span class="t-sep"> / </span><span class="t-es">Solicitar Unirse</span></button>') +
+      '</div>';
+
+    var builderCard =
+      '<div class="program-card">' +
+        '<div class="program-card__badge"><span class="t-en">Builder Partner</span><span class="t-sep"> &middot; </span><span class="t-es">Socio Constructor</span></div>' +
+        '<div class="program-card__title"><span class="t-en">We Build It, You Own It</span><span class="t-sep"><br></span><span class="t-es">Lo Construimos, T&uacute; lo Posees</span></div>' +
+        '<div class="program-card__desc">' +
+          '<span class="t-en">Submit what you want built. We execute using our stack. You pay for your own tools. Earn 15% when we license your system to others.</span>' +
+          '<span class="t-sep"> &middot; </span>' +
+          '<span class="t-es">D&iacute;nos qu&eacute; quieres construir. Lo ejecutamos con nuestras herramientas. T&uacute; pagas tus propias suscripciones. Gana 15% cuando licenciamos tu sistema a otros.</span>' +
+        '</div>' +
+        '<div class="program-card__price">$50<span>/mo + $50/build</span></div>' +
+        '<button class="btn btn-outline btn-sm" onclick="openBuilderModal()"><span class="t-en">Learn More</span><span class="t-sep"> / </span><span class="t-es">Saber M&aacute;s</span></button>' +
+      '</div>';
+
+    el.innerHTML = referralCard + builderCard;
+
+    // Also populate the dedicated Programs section
+    var secGrid = document.getElementById('sec-programs-grid');
+    if (secGrid) secGrid.innerHTML = referralCard + builderCard;
+  }
+
+  // ── Schedule CTA ──────────────────────────────────────────
+  function renderScheduleCTA() {
+    var el = document.getElementById('overview-schedule');
+    if (!el) return;
+    el.style.display = 'flex';
+    el.innerHTML =
+      '<div class="schedule-banner__text">' +
+        '<h4><span class="t-en">Schedule a Call</span><span class="t-sep"> / </span><span class="t-es">Agenda una Llamada</span></h4>' +
+        '<p><span class="t-en">Have a question or want to review your project? Book a session directly.</span>' +
+        '<span class="t-sep"> &middot; </span>' +
+        '<span class="t-es">&iquest;Tienes preguntas o quieres revisar tu proyecto? Reserva una sesi&oacute;n directamente.</span></p>' +
+      '</div>' +
+      '<a href="https://calendly.com/jinyerbalance" target="_blank" rel="noopener" class="btn btn-primary btn-sm">' +
+        '<span class="t-en">Book Now</span><span class="t-sep"> / </span><span class="t-es">Reservar Ahora</span>' +
+      '</a>';
+  }
+
+  // ── Preferences ───────────────────────────────────────────
+  function renderPreferences(prefs) {
+    // old preferences section (kept for backwards compat)
+    ['toggle-newsletter','toggle-newsletter2'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.checked = prefs.newsletter_opt_in !== 0;
+    });
+    ['toggle-content','toggle-content2'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.checked = prefs.content_opt_in !== 0;
+    });
+    ['toggle-ads','toggle-ads2'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.checked = prefs.ads_opt_in !== 0;
+    });
+    applyLang(prefs.language_pref || 'both');
+
+    // Pre-fill settings panel profile fields
+    var spName = document.getElementById('sp-name');
+    var spEmail = document.getElementById('sp-email');
+    var spPhone = document.getElementById('sp-phone');
+    var spContacts = document.getElementById('sp-contacts');
+    if (spName)     spName.value     = client.name || '';
+    if (spEmail)    spEmail.value    = client.email || '';
+    if (spPhone)    spPhone.value    = client.phone || '';
+    if (spContacts) spContacts.value = client.contacts || '';
+
+    // Signups list in settings panel
+    var spSignups = document.getElementById('sp-signups');
+    if (spSignups) {
+      var tags = [];
+      if (client.portal_roles) client.portal_roles.forEach(function(r) {
+        var labels = { referral:'Referral Partner', builder:'Builder Program', student:'Spanish Classes' };
+        if (r !== 'client') tags.push(labels[r] || (r.charAt(0).toUpperCase() + r.slice(1)));
+      });
+      if (client.classes_access) {
+        var ca = typeof client.classes_access === 'string' ? JSON.parse(client.classes_access) : client.classes_access;
+        if (Array.isArray(ca)) ca.forEach(function(c) { tags.push(c); });
+      }
+      spSignups.innerHTML = tags.length
+        ? tags.map(function(t) { return '<span class="signup-tag">' + JYB.escapeHtml(t) + '</span>'; }).join('')
+        : '<span style="font-size:.78rem;color:#6b7280;">No active programs / Sin programas activos</span>';
+    }
+
+  }
+
+  window.savePref = async function (field, value) {
+    var msgEls = [document.getElementById('pref-msg'), document.getElementById('nl-pref-msg')].filter(Boolean);
+    try {
+      var body = {};
+      body[field] = value;
+      await JYB.clientFetch('/api/client/' + client.id + '/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      msgEls.forEach(function(el) {
+        el.textContent = 'Guardado / Saved';
+        setTimeout(function () { el.textContent = ''; }, 2000);
+      });
+    } catch (e) {
+      msgEls.forEach(function(el) { el.textContent = 'Error saving. / Error al guardar.'; });
+    }
   };
 
   function renderPerks() {
@@ -741,6 +1668,108 @@
       JYB.showMsg(msgEl, e.message || 'Request failed. Please try again.', 'error');
     }
   };
+
+  // ── Builder Program Modal ───────────────────────────────
+  window.openBuilderModal = function () {
+    var existing = document.getElementById('builder-modal');
+    if (existing) { existing.classList.remove('hidden'); return; }
+    var div = document.createElement('div');
+    div.id = 'builder-modal';
+    div.className = 'modal-backdrop';
+    div.innerHTML =
+      '<div class="modal" role="dialog" style="max-width:480px;">' +
+        '<h2 class="modal-title"><span class="t-en">Builder Partner Program</span><span class="t-sep"> / </span><span class="t-es">Programa Socio Constructor</span></h2>' +
+        '<p class="modal-sub"><span class="t-en">Tell us what you want built. We execute using our full stack. You own the end result.</span><span class="t-sep"> &middot; </span><span class="t-es">D\u00ednos qu\u00e9 quieres construir. Lo ejecutamos con nuestra plataforma. T\u00fa eres el due\u00f1o del resultado.</span></p>' +
+        '<div style="border:1px solid var(--border,rgba(255,255,255,.12));border-radius:8px;padding:16px 18px;margin-bottom:16px;">' +
+          '<div style="font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#8A8F9E;margin-bottom:10px;">What\'s included</div>' +
+          '<ul style="padding-left:16px;margin:0;font-size:.85rem;color:#C2C8D4;line-height:2;">' +
+            '<li><span class="t-en">We build your system using our stack</span><span class="t-sep"> / </span><span class="t-es">Construimos tu sistema con nuestra plataforma</span></li>' +
+            '<li><span class="t-en">You pay for your own tools &amp; subscriptions</span><span class="t-sep"> / </span><span class="t-es">T\u00fa pagas tus propias suscripciones</span></li>' +
+            '<li><span class="t-en">Earn 15% when we license your system to others</span><span class="t-sep"> / </span><span class="t-es">Gana 15% cuando licenciamos tu sistema</span></li>' +
+            '<li><span class="t-en">$50/mo retainer + $50 per build session</span><span class="t-sep"> / </span><span class="t-es">$50/mes + $50 por sesi\u00f3n de construcci\u00f3n</span></li>' +
+          '</ul>' +
+        '</div>' +
+        '<div class="form-group" style="margin-bottom:14px;">' +
+          '<label class="form-label"><span class="t-en">What do you want built?</span><span class="t-sep"> / </span><span class="t-es">\u00bfQu\u00e9 quieres construir?</span></label>' +
+          '<textarea id="builder-idea" class="form-input" rows="3" placeholder="Describe your idea..."></textarea>' +
+        '</div>' +
+        '<div id="builder-modal-msg" class="msg mb-sm"></div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-ghost" onclick="document.getElementById(\'builder-modal\').classList.add(\'hidden\')"><span class="t-en">Cancel</span><span class="t-sep"> / </span><span class="t-es">Cancelar</span></button>' +
+          '<button class="btn btn-primary" onclick="submitBuilderRequest()"><span class="t-en">Send Idea</span><span class="t-sep"> / </span><span class="t-es">Enviar Idea</span></button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(div);
+  };
+
+  window.submitBuilderRequest = async function () {
+    var idea = (document.getElementById('builder-idea') || {}).value || '';
+    var msgEl = document.getElementById('builder-modal-msg');
+    if (!idea.trim()) { JYB.showMsg(msgEl, 'Please describe your idea first.', 'error'); return; }
+    try {
+      await JYB.clientFetch('/api/messages', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: '[BUILDER REQUEST] ' + idea }),
+      });
+      JYB.showMsg(msgEl, 'Sent! / Enviado. We\'ll be in touch within 1 business day.', 'success');
+      document.getElementById('builder-idea').value = '';
+      setTimeout(function() { document.getElementById('builder-modal').classList.add('hidden'); }, 2500);
+    } catch(e) {
+      JYB.showMsg(msgEl, 'Error sending. Try again.', 'error');
+    }
+  };
+
+  // ── Messages ─────────────────────────────────────────────
+  async function loadMessages() {
+    var thread = document.getElementById('messages-thread');
+    if (!thread) return;
+    thread.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+    try {
+      var data = await JYB.clientFetch('/api/messages');
+      var msgs = (data && data.messages) ? data.messages : [];
+      if (msgs.length === 0) {
+        thread.innerHTML = '<p style="color:var(--text-muted,#8A8F9E);font-size:.85rem;padding:8px 0;">No hay mensajes a&uacute;n. / No messages yet.</p>';
+        return;
+      }
+      thread.innerHTML = msgs.map(function (m) {
+        var isAdmin = (m.sender === 'admin');
+        var cls     = isAdmin ? 'msg-bubble from-admin' : 'msg-bubble from-client';
+        var who     = isAdmin ? 'JYB' : 'T\u00fa';
+        return '<div class="' + cls + '">' +
+          '<div>' + JYB.escapeHtml(m.body) + '</div>' +
+          '<div class="msg-meta">' + JYB.escapeHtml(who) + ' &middot; ' + JYB.formatDate(m.created_at) + '</div>' +
+        '</div>';
+      }).join('');
+      thread.scrollTop = thread.scrollHeight;
+    } catch (e) {
+      thread.innerHTML = '<p style="color:var(--red);">' + JYB.escapeHtml(e.message || 'Failed to load messages.') + '</p>';
+    }
+  }
+
+  // Wire Send button
+  var msgSendBtn = document.getElementById('msg-send');
+  if (msgSendBtn) {
+    msgSendBtn.addEventListener('click', async function () {
+      var input = document.getElementById('msg-input');
+      if (!input) return;
+      var body = input.value.trim();
+      if (!body) return;
+      msgSendBtn.disabled = true;
+      try {
+        await JYB.clientFetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body: body })
+        });
+        input.value = '';
+        loadMessages();
+      } catch (e) {
+        alert(e.message || 'Failed to send message.');
+      } finally {
+        msgSendBtn.disabled = false;
+      }
+    });
+  }
 
   // ── Boot ─────────────────────────────────────────────────
   loadAll();

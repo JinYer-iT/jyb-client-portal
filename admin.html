@@ -6,6 +6,15 @@
   <title>Admin &mdash; JYB Portal</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="/assets/css/portal.css">
+  <style>
+    /* ── Messaging thread ─────────────────────────────────── */
+    .msg-thread { display:flex; flex-direction:column; gap:10px; padding:12px 0; min-height:120px; max-height:360px; overflow-y:auto; }
+    .msg-bubble { max-width:78%; padding:9px 13px; border-radius:8px; font-size:13px; line-height:1.55; }
+    .from-admin-right { align-self:flex-end; background:rgba(255,255,255,0.1); color:#F0F2F6; }
+    .from-client-left { align-self:flex-start; background:rgba(255,255,255,0.05); color:#C2C8D4; }
+    .msg-meta { font-size:11px; color:#8A8F9E; margin-bottom:4px; }
+    .msg-compose { border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; margin-top:12px; }
+  </style>
 </head>
 <body>
 
@@ -24,8 +33,10 @@
 
   <!-- Sidebar -->
   <aside class="admin-sidebar">
+    <button class="sidebar-btn active" id="nav-dashboard" onclick="showSection('dashboard')">Dashboard</button>
+    <div class="sidebar-divider"></div>
     <div class="sidebar-section-label">Clients</div>
-    <button class="sidebar-btn active" id="nav-clients" onclick="showSection('clients')">All Clients</button>
+    <button class="sidebar-btn" id="nav-clients" onclick="showSection('clients')">All Clients</button>
     <div class="sidebar-divider"></div>
     <div class="sidebar-section-label">Add New</div>
     <button class="sidebar-btn" id="nav-add-client" onclick="showSection('add-client')">+ Add Client / Partner</button>
@@ -42,8 +53,33 @@
     <!-- Global messages -->
     <div id="admin-msg" class="msg mb-md" role="alert" aria-live="polite"></div>
 
+    <!-- ── Section: Dashboard ───────────────────────────── -->
+    <section id="section-dashboard" style="display:none;">
+
+      <div class="section-header mb-md">
+        <h2 style="font-family:var(--font-head);font-size:1.25rem;">Dashboard</h2>
+        <button class="btn btn-outline btn-sm" onclick="loadDashboard()">Refresh</button>
+      </div>
+
+      <!-- Stat Cards -->
+      <div id="dash-stats" class="card-grid mb-lg" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));"></div>
+
+      <!-- Needs Attention -->
+      <div class="card mb-lg">
+        <h3 style="font-family:var(--font-head);font-size:.95rem;font-weight:600;margin:0 0 14px;color:var(--text-primary);">Needs Attention</h3>
+        <div id="dash-attention"><div class="spinner-wrap"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- Recent Clients -->
+      <div class="card">
+        <h3 style="font-family:var(--font-head);font-size:.95rem;font-weight:600;margin:0 0 14px;color:var(--text-primary);">Clients</h3>
+        <div id="dash-clients"><div class="spinner-wrap"><div class="spinner"></div></div></div>
+      </div>
+
+    </section>
+
     <!-- ── Section: All Clients ─────────────────────────── -->
-    <section id="section-clients">
+    <section id="section-clients" style="display:none;">
 
       <div class="section-header mb-md">
         <h2 style="font-family:var(--font-head);font-size:1.25rem;">All Clients</h2>
@@ -359,50 +395,68 @@
   </div>
 </div>
 
-<!-- ── Add Meeting Modal ─────────────────────────────────── -->
+<!-- ── Add Meeting Modal (Minuta) ────────────────────────── -->
 <div class="modal-backdrop hidden" id="meeting-modal">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtg-modal-title">
-    <h2 class="modal-title" id="mtg-modal-title">Add Meeting Note</h2>
+  <div class="modal" style="max-width:640px;" role="dialog" aria-modal="true" aria-labelledby="mtg-modal-title">
+    <h2 class="modal-title" id="mtg-modal-title">Minuta de Reunión &mdash; Meeting Minutes</h2>
     <form id="add-meeting-form" novalidate>
 
-      <div class="form-group mb-sm">
-        <label class="form-label" for="mtg-date">Meeting Date <span style="color:var(--red)">*</span></label>
-        <input id="mtg-date" type="date" class="form-input" required>
+      <div class="form-grid mb-sm">
+        <div class="form-group">
+          <label class="form-label" for="mtg-date">Fecha / Date <span style="color:var(--red)">*</span></label>
+          <input id="mtg-date" type="date" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="mtg-attendees">Asistentes / Attendees</label>
+          <input id="mtg-attendees" type="text" class="form-input" placeholder="e.g. Jiny, Nildaris">
+        </div>
       </div>
 
       <div class="form-group mb-sm">
-        <label class="form-label" for="mtg-summary">Summary <span style="color:var(--red)">*</span></label>
-        <textarea id="mtg-summary" class="form-textarea" placeholder="What was discussed&hellip;" required></textarea>
+        <label class="form-label" for="mtg-purpose">Propósito / Purpose <span style="color:var(--red)">*</span></label>
+        <input id="mtg-purpose" type="text" class="form-input" placeholder="e.g. Intake meeting — logo + website project" required>
       </div>
 
       <div class="form-group mb-sm">
-        <label class="form-label">Action Items</label>
+        <label class="form-label">Temas Tratados / Topics Discussed</label>
+        <div id="mtg-topics" class="dynamic-rows"></div>
+        <button type="button" class="btn btn-ghost btn-sm mt-xs" onclick="addTopicRow()">+ Agregar tema / Add topic</button>
+      </div>
+
+      <div class="form-group mb-sm">
+        <label class="form-label">Decisiones / Decisions Made</label>
+        <div id="mtg-decisions" class="dynamic-rows"></div>
+        <button type="button" class="btn btn-ghost btn-sm mt-xs" onclick="addDecisionRow()">+ Agregar decisión / Add decision</button>
+      </div>
+
+      <div class="form-group mb-sm">
+        <label class="form-label">Próximos Pasos / Next Steps &amp; Action Items</label>
         <div id="mtg-action-items" class="dynamic-rows"></div>
-        <button type="button" class="btn btn-ghost btn-sm mt-xs" onclick="addActionItem()">+ Add action item</button>
+        <button type="button" class="btn btn-ghost btn-sm mt-xs" onclick="addActionItem()">+ Agregar paso / Add action item</button>
       </div>
 
       <div class="form-group mb-sm">
-        <div class="internal-label">Internal Only &mdash; client will not see this</div>
-        <label class="form-label" for="mtg-internal">Internal Notes</label>
-        <textarea id="mtg-internal" class="form-textarea" placeholder="Notes for internal use only&hellip;"></textarea>
+        <div class="internal-label">Solo interno &mdash; el cliente no verá esto / Internal Only &mdash; client will not see this</div>
+        <label class="form-label" for="mtg-internal">Notas Internas / Internal Notes</label>
+        <textarea id="mtg-internal" class="form-textarea" style="min-height:60px;" placeholder="Notes for internal use only&hellip;"></textarea>
       </div>
 
       <div class="form-group mb-md">
-        <label class="form-label">Visible to Client</label>
+        <label class="form-label">Visible al Cliente / Visible to Client</label>
         <div class="toggle-wrap">
           <label class="toggle">
             <input type="checkbox" id="mtg-visible" checked>
             <span class="toggle-slider"></span>
           </label>
-          <span class="toggle-label">Yes &mdash; client can see this meeting note</span>
+          <span class="toggle-label">Sí &mdash; el cliente puede ver esta minuta / Yes &mdash; client can see this</span>
         </div>
       </div>
 
       <div id="add-meeting-msg" class="msg mb-sm"></div>
 
       <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" onclick="closeMeetingModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="add-meeting-btn">Add Note</button>
+        <button type="button" class="btn btn-ghost" onclick="closeMeetingModal()">Cancelar / Cancel</button>
+        <button type="submit" class="btn btn-primary" id="add-meeting-btn">Guardar Minuta / Save</button>
       </div>
 
     </form>
@@ -474,11 +528,146 @@
 
     JYB.hideMsg(adminMsg);
 
-    // Auto-load data for referral sections
+    // Auto-load data per section
+    if (name === 'dashboard') loadDashboard();
     if (name === 'referral-partners') loadReferralPartners();
     if (name === 'referral-submissions') loadSubmissions();
     if (name === 'commissions') loadCommissions();
   };
+
+  // ── Dashboard ────────────────────────────────────────────
+  window.loadDashboard = async function () {
+    var statsEl     = document.getElementById('dash-stats');
+    var attentionEl = document.getElementById('dash-attention');
+    var clientsEl   = document.getElementById('dash-clients');
+
+    statsEl.innerHTML     = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+    attentionEl.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+    clientsEl.innerHTML   = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+
+    try {
+      var data = await JYB.adminFetch('/api/admin/clients');
+      var clients = (data && data.clients) ? data.clients : [];
+
+      var total    = clients.length;
+      var active   = clients.filter(function(c){ return (c.status||'active')==='active'; }).length;
+      var inactive = total - active;
+
+      // Fetch invoices for all clients in parallel
+      var invoiceResults = await Promise.allSettled(clients.map(function(c){
+        return JYB.adminFetch('/api/admin/invoices?client_id=' + c.id);
+      }));
+
+      var unpaidTotal = 0;
+      var unpaidCount = 0;
+      var attentionItems = [];
+
+      clients.forEach(function(c, i){
+        var res = invoiceResults[i];
+        if (res.status === 'fulfilled' && res.value && res.value.invoices) {
+          res.value.invoices.forEach(function(inv){
+            if (inv.status === 'unpaid' || inv.status === 'overdue') {
+              // amount may be stored as dollars (float) or cents (int)
+              var amt = inv.amount_cents || (inv.amount ? Math.round(inv.amount * 100) : 0);
+              unpaidTotal += amt;
+              unpaidCount++;
+              attentionItems.push({
+                type: 'invoice',
+                client: c.name,
+                label: 'Invoice ' + inv.invoice_number + ' — ' + JYB.formatMoney(amt) + ' ' + (inv.status === 'overdue' ? '(OVERDUE)' : 'unpaid'),
+                urgent: inv.status === 'overdue'
+              });
+            }
+          });
+        }
+        if ((c.status||'active') === 'inactive') {
+          attentionItems.push({ type: 'client', client: c.name, label: 'Account inactive', urgent: false });
+        }
+      });
+
+      // Stat cards
+      statsEl.innerHTML = [
+        statCard('Total Clients', total, ''),
+        statCard('Active', active, 'green'),
+        statCard('Unpaid Invoices', JYB.formatMoney(unpaidTotal), unpaidCount > 0 ? 'amber' : 'green'),
+        statCard('Inactive', inactive, inactive > 0 ? 'red' : ''),
+      ].join('');
+
+      // Unread messages
+      try {
+        var unreadData = await JYB.adminFetch('/api/admin/messages/unread');
+        var unreadList = (unreadData && unreadData.unread) ? unreadData.unread : [];
+        unreadList.forEach(function (u) {
+          if (u.count > 0) {
+            var clientRecord = clients.find(function (c) { return c.id === u.client_id; });
+            var clientName   = clientRecord ? clientRecord.name : ('Client #' + u.client_id);
+            attentionItems.push({
+              type: 'messages',
+              client: clientName,
+              label: 'Messages: ' + u.count + ' unread',
+              urgent: false
+            });
+          }
+        });
+      } catch (e) { /* unread fetch is non-critical */ }
+
+      // Attention list
+      if (attentionItems.length === 0) {
+        attentionEl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">All clear — nothing needs attention right now.</p>';
+      } else {
+        attentionEl.innerHTML = '<ul style="list-style:none;padding:0;margin:0;">' +
+          attentionItems.map(function(item){
+            var color = item.urgent ? 'var(--red,#e57373)' : 'var(--amber,#e6a817)';
+            return '<li style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border,rgba(255,255,255,.06));">' +
+              '<span style="color:' + color + ';font-size:.75rem;font-weight:700;text-transform:uppercase;padding-top:2px;white-space:nowrap;">' + JYB.escapeHtml(item.type) + '</span>' +
+              '<span style="font-size:.85rem;color:var(--text-primary);">' +
+                '<strong>' + JYB.escapeHtml(item.client) + '</strong> &mdash; ' + JYB.escapeHtml(item.label) +
+              '</span>' +
+            '</li>';
+          }).join('') +
+        '</ul>';
+      }
+
+      // Clients quick list
+      if (clients.length === 0) {
+        clientsEl.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem;">No clients yet.</p>';
+      } else {
+        clientsEl.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:.85rem;">' +
+          '<thead><tr style="border-bottom:1px solid var(--border,rgba(255,255,255,.08));">' +
+            '<th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Name</th>' +
+            '<th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Company</th>' +
+            '<th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Type</th>' +
+            '<th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Status</th>' +
+            '<th style="text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;">Start</th>' +
+          '</tr></thead>' +
+          '<tbody>' +
+          clients.map(function(c){
+            return '<tr style="border-bottom:1px solid var(--border,rgba(255,255,255,.04));cursor:pointer;" onclick="showSection(\'clients\')">' +
+              '<td style="padding:8px;">' + JYB.escapeHtml(c.name) + '</td>' +
+              '<td style="padding:8px;color:var(--text-muted);">' + JYB.escapeHtml(c.company||'—') + '</td>' +
+              '<td style="padding:8px;">' + JYB.typeBadge(c.account_type) + '</td>' +
+              '<td style="padding:8px;">' + JYB.statusBadge(c.status||'active') + '</td>' +
+              '<td style="padding:8px;color:var(--text-muted);">' + JYB.formatDate(c.start_date) + '</td>' +
+            '</tr>';
+          }).join('') +
+          '</tbody></table>';
+      }
+
+    } catch (err) {
+      statsEl.innerHTML = '';
+      attentionEl.innerHTML = '<p style="color:var(--red);">' + JYB.escapeHtml(err.message||'Failed to load dashboard.') + '</p>';
+      clientsEl.innerHTML = '';
+    }
+  };
+
+  function statCard(label, value, color) {
+    var colors = { green: '#4caf50', amber: '#e6a817', red: '#e57373', '': 'var(--text-primary)' };
+    var c = colors[color] || colors[''];
+    return '<div style="background:var(--surface,#111);border:1px solid var(--border,rgba(255,255,255,.08));border-radius:10px;padding:20px 22px;">' +
+      '<div style="font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">' + label + '</div>' +
+      '<div style="font-size:1.6rem;font-weight:700;color:' + c + ';font-family:var(--font-head);">' + value + '</div>' +
+    '</div>';
+  }
 
   // ── Load Clients ────────────────────────────────────────
   window.loadClients = async function () {
@@ -537,7 +726,14 @@
         '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'projects\', this)">Projects</button>' +
         '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'invoices\', this)">Invoices</button>' +
         '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'meetings\', this)">Meetings</button>' +
+        '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'messages\', this)">Messages</button>' +
+        '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'orders\', this)">Orders</button>' +
         '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'access\', this)">Access &amp; Roles</button>' +
+      '</div>' +
+
+      '<div class="client-tab-content" id="ctab-' + c.id + '-orders">' +
+        '<div id="corders-' + c.id + '" class="mb-sm">' + JYB.spinner() + '</div>' +
+        '<button class="btn btn-outline btn-sm" onclick="openOrderModal(\'' + c.id + '\')">+ Add Order</button>' +
       '</div>' +
 
       '<div class="client-tab-content active" id="ctab-' + c.id + '-info">' +
@@ -562,6 +758,10 @@
       '<div class="client-tab-content" id="ctab-' + c.id + '-meetings">' +
         '<div id="cmeetings-' + c.id + '" class="meeting-list mb-sm">' + JYB.spinner() + '</div>' +
         '<button class="btn btn-outline btn-sm" onclick="openMeetingModal(\'' + c.id + '\')">+ Add Meeting Note</button>' +
+      '</div>' +
+
+      '<div class="client-tab-content" id="ctab-' + c.id + '-messages">' +
+        buildMessagesTab(c.id) +
       '</div>' +
 
       '<div class="client-tab-content" id="ctab-' + c.id + '-access">' +
@@ -610,6 +810,67 @@
     return html;
   }
 
+  // ── Messages tab HTML ────────────────────────────────────
+  function buildMessagesTab(clientId) {
+    return '<div id="cmsg-' + clientId + '" class="msg-thread mb-sm">' +
+        '<div class="spinner-wrap"><div class="spinner"></div></div>' +
+      '</div>' +
+      '<div class="msg-compose">' +
+        '<textarea id="cmsg-input-' + clientId + '" class="form-textarea" ' +
+          'placeholder="Escribe tu respuesta / Write your reply\u2026" ' +
+          'style="min-height:70px;" rows="3"></textarea>' +
+        '<button class="btn btn-outline btn-sm mt-xs" ' +
+          'onclick="sendAdminMessage(\'' + clientId + '\')">Enviar / Send</button>' +
+      '</div>';
+  }
+
+  // ── Load client messages (admin) ─────────────────────────
+  async function loadClientMessages(clientId) {
+    var el = document.getElementById('cmsg-' + clientId);
+    if (!el) return;
+    try {
+      var data = await JYB.adminFetch('/api/admin/messages?client_id=' + clientId);
+      var msgs = (data && data.messages) ? data.messages : [];
+      if (msgs.length === 0) {
+        el.innerHTML = '<p style="color:var(--text-muted,#8A8F9E);font-size:.85rem;">No messages yet.</p>';
+        return;
+      }
+      el.innerHTML = msgs.map(function (m) {
+        var isAdmin = (m.sender === 'admin');
+        var cls     = isAdmin ? 'msg-bubble from-admin-right' : 'msg-bubble from-client-left';
+        var who     = isAdmin ? 'JYB' : 'Client';
+        return '<div class="' + cls + '">' +
+          '<div class="msg-meta">' + JYB.escapeHtml(who) + ' &middot; ' + JYB.formatDate(m.created_at) + '</div>' +
+          '<div>' + JYB.escapeHtml(m.body) + '</div>' +
+        '</div>';
+      }).join('');
+      el.scrollTop = el.scrollHeight;
+    } catch (e) {
+      el.innerHTML = '<p style="color:var(--red);">' + JYB.escapeHtml(e.message || 'Failed to load messages.') + '</p>';
+    }
+  }
+
+  // ── Send admin reply ─────────────────────────────────────
+  window.sendAdminMessage = async function (clientId) {
+    var input = document.getElementById('cmsg-input-' + clientId);
+    if (!input) return;
+    var body = input.value.trim();
+    if (!body) return;
+    try {
+      await JYB.adminFetch('/api/admin/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: clientId, body: body })
+      });
+      input.value = '';
+      var el = document.getElementById('cmsg-' + clientId);
+      if (el) el.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+      loadClientMessages(clientId);
+    } catch (e) {
+      JYB.showMsg(document.getElementById('admin-msg'), e.message || 'Failed to send message.', 'error');
+    }
+  };
+
   function infoRow(label, value) {
     if (!value) return '';
     return '<div class="flex-center gap-sm mb-xs" style="font-size:13px;">' +
@@ -640,6 +901,8 @@
     btn.classList.add('active');
     var tabEl = document.getElementById('ctab-' + clientId + '-' + tab);
     if (tabEl) tabEl.classList.add('active');
+    if (tab === 'messages') loadClientMessages(clientId);
+    if (tab === 'orders')   loadClientOrders(clientId);
   };
 
   // ── Load client projects ─────────────────────────────────
@@ -714,35 +977,75 @@
       } else {
         el.innerHTML = meetings.map(function (m) {
           var visibleBadge = m.visible_to_client
-            ? '<span class="badge badge-green" style="font-size:11px;">Visible to client</span>'
-            : '<span class="badge badge-silver" style="font-size:11px;">Internal only</span>';
+            ? '<span class="badge badge-green" style="font-size:11px;">Visible al cliente</span>'
+            : '<span class="badge badge-silver" style="font-size:11px;">Solo interno</span>';
+
+          // Parse action items
           var actionHtml = '';
           if (m.action_items) {
             try {
               var items = typeof m.action_items === 'string' ? JSON.parse(m.action_items) : m.action_items;
               if (Array.isArray(items) && items.length > 0) {
-                actionHtml = '<ul class="action-items-list mt-xs">' +
-                  items.map(function (a) {
+                actionHtml = minutaSection('Próximos Pasos / Next Steps',
+                  '<ul style="margin:4px 0 0;padding-left:18px;">' +
+                  items.map(function(a){
                     var text = typeof a === 'string' ? a : (a.text || a.item || '');
-                    return '<li class="action-item">' + JYB.escapeHtml(text) + '</li>';
-                  }).join('') + '</ul>';
+                    return '<li style="font-size:13px;margin-bottom:3px;">' + JYB.escapeHtml(text) + '</li>';
+                  }).join('') + '</ul>');
               }
-            } catch (e) {}
+            } catch(e){}
           }
+
+          // Internal notes
           var internalHtml = '';
           if (m.internal_notes) {
-            internalHtml = '<div class="internal-label mt-xs">Internal Only</div>' +
+            internalHtml = '<div class="internal-label mt-xs">Solo Interno / Internal Only</div>' +
               '<div style="font-size:13px;color:var(--amber);margin-top:4px;">' + JYB.escapeHtml(m.internal_notes) + '</div>';
           }
+
+          // Try to parse structured minuta JSON
+          var bodyHtml = '';
+          try {
+            var parsed = typeof m.summary === 'string' ? JSON.parse(m.summary) : m.summary;
+            if (parsed && parsed._type === 'minuta') {
+              var mn = parsed;
+              bodyHtml =
+                (mn.attendees ? minutaSection('Asistentes / Attendees', '<span style="font-size:13px;">' + JYB.escapeHtml(mn.attendees) + '</span>') : '') +
+                (mn.topics && mn.topics.length ? minutaSection('Temas Tratados / Topics Discussed', bulletList(mn.topics)) : '') +
+                (mn.decisions && mn.decisions.length ? minutaSection('Decisiones / Decisions Made', bulletList(mn.decisions)) : '');
+            } else {
+              bodyHtml = '<div style="font-size:13px;white-space:pre-wrap;">' + JYB.escapeHtml(m.summary || '') + '</div>';
+            }
+          } catch(e) {
+            bodyHtml = '<div style="font-size:13px;white-space:pre-wrap;">' + JYB.escapeHtml(m.summary || '') + '</div>';
+          }
+
+          var purposeHtml = '';
+          try {
+            var p2 = typeof m.summary === 'string' ? JSON.parse(m.summary) : {};
+            if (p2 && p2.purpose) purposeHtml = '<div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;font-style:italic;">' + JYB.escapeHtml(p2.purpose) + '</div>';
+          } catch(e){}
+
           return '<div class="meeting-card">' +
             '<div class="flex-center gap-sm mb-xs">' +
               '<span class="meeting-date" style="margin:0;">' + JYB.formatDate(m.meeting_date) + '</span>' +
               visibleBadge +
             '</div>' +
-            '<div class="meeting-summary">' + JYB.escapeHtml(m.summary) + '</div>' +
-            actionHtml + internalHtml +
+            purposeHtml + bodyHtml + actionHtml + internalHtml +
           '</div>';
         }).join('');
+
+        function minutaSection(label, content) {
+          return '<div style="margin-bottom:10px;">' +
+            '<div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;">' + label + '</div>' +
+            content +
+          '</div>';
+        }
+        function bulletList(arr) {
+          return '<ul style="margin:4px 0 0;padding-left:18px;">' +
+            arr.map(function(t){ return '<li style="font-size:13px;margin-bottom:3px;">' + JYB.escapeHtml(t) + '</li>'; }).join('') +
+          '</ul>';
+        }
       }
     } catch (err) {
       el.innerHTML = '<div class="msg msg-error visible">' + JYB.escapeHtml(err.message) + '</div>';
@@ -836,6 +1139,120 @@
     document.getElementById('token-modal').classList.add('hidden');
     showSection('clients');
     loadClients();
+  };
+
+  // ── Load client orders ───────────────────────────────────
+  async function loadClientOrders(clientId) {
+    var el = document.getElementById('corders-' + clientId);
+    if (!el || el.dataset.loaded) return;
+    el.dataset.loaded = '1';
+    try {
+      var data = await JYB.adminFetch('/api/client/' + clientId + '/orders');
+      var orders = data.orders || [];
+      if (orders.length === 0) {
+        el.innerHTML = '<div class="empty-state" style="padding:16px 0;"><p>No orders yet.</p></div>';
+      } else {
+        el.innerHTML = orders.map(function(o) {
+          var total = o.total_cents ? ('$' + (o.total_cents / 100).toFixed(2)) : '—';
+          return '<div style="border:1px solid var(--border,rgba(255,255,255,.1));border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">' +
+            '<div>' +
+              '<div style="font-weight:600;font-size:.9rem;">' + JYB.escapeHtml(o.order_ref || o.id.slice(0,8)) + '</div>' +
+              '<div style="font-size:.75rem;color:#8A8F9E;margin-top:2px;">' + JYB.escapeHtml(o.source || 'store') + ' &middot; ' + JYB.escapeHtml(o.created_at ? o.created_at.slice(0,10) : '') + '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:10px;">' +
+              JYB.statusBadge(o.status) + ' <span style="font-size:.9rem;">' + total + '</span>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+    } catch(e) { el.innerHTML = '<p style="color:#8A8F9E;font-size:.85rem;">Error loading orders.</p>'; }
+  }
+
+  // ── Order Modal ───────────────────────────────────────────
+  var orderModalEl = null;
+  window.openOrderModal = function (clientId) {
+    currentClient = clientId;
+    if (!orderModalEl) {
+      orderModalEl = document.createElement('div');
+      orderModalEl.id = 'order-modal';
+      orderModalEl.className = 'modal-backdrop hidden';
+      orderModalEl.innerHTML =
+        '<div class="modal" role="dialog">' +
+          '<h2 class="modal-title">Add Order</h2>' +
+          '<div class="form-grid mb-sm">' +
+            '<div class="form-group">' +
+              '<label class="form-label">Order Reference (Stripe/Printful ID)</label>' +
+              '<input id="om-ref" type="text" class="form-input" placeholder="e.g. pi_xxx or PO-0001">' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label class="form-label">Source</label>' +
+              '<select id="om-source" class="form-select"><option value="store">JYB Store</option><option value="printful">Printful</option><option value="stripe">Stripe</option><option value="manual">Manual</option></select>' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label class="form-label">Status</label>' +
+              '<select id="om-status" class="form-select"><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option></select>' +
+            '</div>' +
+            '<div class="form-group">' +
+              '<label class="form-label">Total ($)</label>' +
+              '<input id="om-total" type="number" step="0.01" class="form-input" placeholder="e.g. 35.00">' +
+            '</div>' +
+          '</div>' +
+          '<div class="form-group mb-sm">' +
+            '<label class="form-label">Items (one per line)</label>' +
+            '<textarea id="om-items" class="form-input" rows="3" placeholder="JYB Tote Bag&#10;Balance Journal"></textarea>' +
+          '</div>' +
+          '<div class="form-group mb-sm">' +
+            '<label class="form-label">Tracking URL (optional)</label>' +
+            '<input id="om-tracking" type="text" class="form-input" placeholder="https://...">' +
+          '</div>' +
+          '<div class="form-group mb-sm">' +
+            '<label class="form-label">Receipt URL (optional)</label>' +
+            '<input id="om-receipt" type="text" class="form-input" placeholder="https://...">' +
+          '</div>' +
+          '<div id="om-msg" class="msg mb-sm"></div>' +
+          '<div class="modal-actions">' +
+            '<button type="button" class="btn btn-ghost" onclick="closeOrderModal()">Cancel</button>' +
+            '<button type="button" class="btn btn-primary" onclick="submitOrder()">Add Order</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(orderModalEl);
+    }
+    orderModalEl.classList.remove('hidden');
+  };
+
+  window.closeOrderModal = function () {
+    if (orderModalEl) orderModalEl.classList.add('hidden');
+  };
+
+  window.submitOrder = async function () {
+    var msgEl = document.getElementById('om-msg');
+    var ref     = (document.getElementById('om-ref')     ||{}).value || '';
+    var source  = (document.getElementById('om-source')  ||{}).value || 'store';
+    var status  = (document.getElementById('om-status')  ||{}).value || 'processing';
+    var totalRaw = parseFloat((document.getElementById('om-total') ||{}).value || 0);
+    var itemsRaw = ((document.getElementById('om-items') ||{}).value || '').split('\n').map(function(s){return s.trim();}).filter(Boolean);
+    var tracking = (document.getElementById('om-tracking')||{}).value || '';
+    var receipt  = (document.getElementById('om-receipt') ||{}).value || '';
+    try {
+      await JYB.adminFetch('/api/admin/orders', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          client_id: currentClient,
+          order_ref: ref || null,
+          source, status,
+          total_cents: Math.round(totalRaw * 100),
+          items: itemsRaw.length ? itemsRaw : null,
+          tracking_url: tracking || null,
+          receipt_url:  receipt  || null,
+        }),
+      });
+      JYB.showMsg(msgEl, 'Order added.', 'success');
+      closeOrderModal();
+      var el = document.getElementById('corders-' + currentClient);
+      if (el) { el.dataset.loaded = ''; el.innerHTML = JYB.spinner(); loadClientOrders(currentClient); }
+    } catch(e) {
+      JYB.showMsg(msgEl, e.message || 'Failed to add order.', 'error');
+    }
   };
 
   // ── Invoice Modal ─────────────────────────────────────────
@@ -1019,19 +1436,32 @@
     document.getElementById('meeting-modal').classList.add('hidden');
     document.getElementById('add-meeting-form').reset();
     document.getElementById('mtg-action-items').innerHTML = '';
+    document.getElementById('mtg-topics').innerHTML = '';
+    document.getElementById('mtg-decisions').innerHTML = '';
   };
 
-  window.addActionItem = function () {
-    var container = document.getElementById('mtg-action-items');
+  function addDynamicRow(containerId, placeholder) {
+    var container = document.getElementById(containerId);
     var row = document.createElement('div');
     row.className = 'dynamic-row';
     row.style.gridTemplateColumns = '1fr auto';
     row.innerHTML =
-      '<input type="text" class="form-input" placeholder="Action item\u2026" style="font-size:13px;">' +
+      '<input type="text" class="form-input" placeholder="' + placeholder + '" style="font-size:13px;">' +
       '<button type="button" class="btn btn-ghost" onclick="this.closest(\'.dynamic-row\').remove()" title="Remove">&times;</button>';
     container.appendChild(row);
     row.querySelector('input').focus();
-  };
+  }
+
+  window.addActionItem  = function () { addDynamicRow('mtg-action-items', 'Próximo paso / Next step\u2026'); };
+  window.addTopicRow    = function () { addDynamicRow('mtg-topics',        'Tema tratado / Topic discussed\u2026'); };
+  window.addDecisionRow = function () { addDynamicRow('mtg-decisions',     'Decisión tomada / Decision made\u2026'); };
+
+  function collectRows(containerId) {
+    var inputs = document.querySelectorAll('#' + containerId + ' input[type="text"]');
+    var out = [];
+    inputs.forEach(function(inp){ var v = inp.value.trim(); if (v) out.push(v); });
+    return out;
+  }
 
   document.getElementById('add-meeting-form').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -1039,25 +1469,27 @@
     var msg = document.getElementById('add-meeting-msg');
     JYB.hideMsg(msg);
 
-    var meeting_date     = document.getElementById('mtg-date').value;
-    var summary          = document.getElementById('mtg-summary').value.trim();
-    var internal_notes   = document.getElementById('mtg-internal').value.trim();
+    var meeting_date      = document.getElementById('mtg-date').value;
+    var attendees         = document.getElementById('mtg-attendees').value.trim();
+    var purpose           = document.getElementById('mtg-purpose').value.trim();
+    var internal_notes    = document.getElementById('mtg-internal').value.trim();
     var visible_to_client = document.getElementById('mtg-visible').checked;
 
-    if (!meeting_date || !summary) {
-      JYB.showMsg(msg, 'Meeting date and summary are required.', 'error');
+    if (!meeting_date || !purpose) {
+      JYB.showMsg(msg, 'Fecha y propósito son requeridos / Date and purpose are required.', 'error');
       return;
     }
 
-    var actionInputs = document.querySelectorAll('#mtg-action-items input[type="text"]');
-    var action_items = [];
-    actionInputs.forEach(function (inp) {
-      var val = inp.value.trim();
-      if (val) action_items.push(val);
-    });
+    var topics    = collectRows('mtg-topics');
+    var decisions = collectRows('mtg-decisions');
+    var action_items = collectRows('mtg-action-items');
+
+    // Store as structured JSON minuta
+    var minuta = { _type: 'minuta', attendees, purpose, topics, decisions };
+    var summary = JSON.stringify(minuta);
 
     btn.disabled = true;
-    btn.textContent = 'Saving\u2026';
+    btn.textContent = 'Guardando\u2026';
 
     try {
       var data = await JYB.adminFetch('/api/admin/meetings', {
@@ -1358,8 +1790,7 @@
   });
 
   // ── Boot ─────────────────────────────────────────────────
-  showSection('clients');
-  loadClients();
+  showSection('dashboard');
 
 })();
 </script>
