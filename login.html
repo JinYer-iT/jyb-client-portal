@@ -48,27 +48,7 @@
         Don&rsquo;t have a token? Contact us at
         <a href="mailto:hello@jinyerbalance.com">hello@jinyerbalance.com</a>
       </p>
-      <button class="admin-toggle-btn" id="admin-toggle" type="button">
-        Agency login &rarr;
-      </button>
     </div>
-
-    <!-- Admin login (hidden by default) -->
-    <form class="admin-form" id="admin-form" novalidate>
-      <div class="form-group">
-        <label class="form-label" for="admin-pass">Admin Password</label>
-        <input
-          id="admin-pass"
-          type="password"
-          class="form-input"
-          placeholder="Enter admin token"
-          autocomplete="current-password"
-        >
-      </div>
-      <button type="submit" class="btn btn-outline w-full" id="admin-submit-btn">
-        Enter Admin Portal
-      </button>
-    </form>
 
   </div>
 </main>
@@ -76,14 +56,10 @@
 <script src="/assets/js/portal.js"></script>
 <script>
 (function () {
-  var msg         = document.getElementById('login-msg');
-  var clientForm  = document.getElementById('client-form');
-  var clientBtn   = document.getElementById('client-submit-btn');
-  var tokenInput  = document.getElementById('token-input');
-  var adminToggle = document.getElementById('admin-toggle');
-  var adminForm   = document.getElementById('admin-form');
-  var adminPass   = document.getElementById('admin-pass');
-  var adminBtn    = document.getElementById('admin-submit-btn');
+  var msg        = document.getElementById('login-msg');
+  var clientForm = document.getElementById('client-form');
+  var clientBtn  = document.getElementById('client-submit-btn');
+  var tokenInput = document.getElementById('token-input');
 
   // ── If already logged in, skip ──
   if (JYB.getAdminToken()) {
@@ -95,30 +71,12 @@
     return;
   }
 
-  // ── Check for ?mode=admin ──
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('mode') === 'admin') {
-    adminForm.classList.add('visible');
-  }
-
   // ── Auto-login via URL token ──
   var urlToken = JYB.getUrlToken();
   if (urlToken) {
     tokenInput.value = urlToken;
-    // Trigger login automatically
     doClientLogin(urlToken);
   }
-
-  // ── Admin toggle ──
-  adminToggle.addEventListener('click', function () {
-    adminForm.classList.toggle('visible');
-    if (adminForm.classList.contains('visible')) {
-      adminPass.focus();
-      adminToggle.textContent = 'Cancel';
-    } else {
-      adminToggle.textContent = 'Agency login \u2192';
-    }
-  });
 
   // ── Client login ──
   clientForm.addEventListener('submit', function (e) {
@@ -164,40 +122,6 @@
       clientBtn.textContent = 'Access My Portal';
     }
   }
-
-  // ── Admin login ──
-  adminForm.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    var token = adminPass.value.trim();
-    if (!token) {
-      JYB.showMsg(msg, 'Enter the admin token.', 'error');
-      return;
-    }
-
-    adminBtn.disabled = true;
-    adminBtn.textContent = 'Verifying\u2026';
-    JYB.hideMsg(msg);
-
-    try {
-      // Verify by hitting a protected endpoint
-      var data = await JYB.apiFetch('/api/admin/clients', {
-        headers: { Authorization: 'Bearer ' + token },
-      });
-
-      if (data.success) {
-        JYB.setAdminToken(token);
-        window.location.replace('/admin.html');
-      } else {
-        JYB.showMsg(msg, 'Incorrect admin token.', 'error');
-        adminBtn.disabled = false;
-        adminBtn.textContent = 'Enter Admin Portal';
-      }
-    } catch (err) {
-      JYB.showMsg(msg, 'Incorrect admin token.', 'error');
-      adminBtn.disabled = false;
-      adminBtn.textContent = 'Enter Admin Portal';
-    }
-  });
 
 })();
 </script>

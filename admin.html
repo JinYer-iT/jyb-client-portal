@@ -325,7 +325,42 @@
 
   // ── Auth guard ──────────────────────────────────────────
   if (!JYB.getAdminToken()) {
-    window.location.replace('/login.html?mode=admin');
+    // Show inline admin login — don't redirect to the public client login page
+    document.querySelector('.portal-nav').style.display = 'none';
+    document.querySelector('.admin-layout').style.display = 'none';
+    var loginBox = document.createElement('div');
+    loginBox.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;';
+    loginBox.innerHTML = '<div style="background:var(--surface,#111);border:1px solid var(--border,rgba(255,255,255,.08));border-radius:12px;padding:40px;width:100%;max-width:360px;">' +
+      '<p style="font-family:var(--font-head);font-size:1.5rem;font-weight:500;color:var(--text-primary,#F0F2F6);margin:0 0 6px;">Agency Access</p>' +
+      '<p style="font-size:.85rem;color:var(--text-muted,#8A8F9E);margin:0 0 28px;">Enter your admin token to continue.</p>' +
+      '<div id="admin-gate-msg" style="display:none;padding:10px 14px;background:rgba(220,80,80,.12);border:1px solid rgba(220,80,80,.3);border-radius:6px;font-size:.82rem;color:#e57373;margin-bottom:16px;"></div>' +
+      '<label style="display:block;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted,#8A8F9E);margin-bottom:8px;">Admin Token</label>' +
+      '<input id="admin-gate-pass" type="password" placeholder="Enter token" autocomplete="current-password" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid var(--border,rgba(255,255,255,.1));border-radius:6px;padding:12px 14px;font-size:.9rem;color:var(--text-primary,#F0F2F6);outline:none;margin-bottom:16px;">' +
+      '<button id="admin-gate-btn" style="width:100%;padding:13px;background:var(--text-primary,#F0F2F6);color:#0a0a0a;border:none;border-radius:6px;font-size:.9rem;font-weight:600;cursor:pointer;">Enter Admin Portal</button>' +
+    '</div>';
+    document.body.appendChild(loginBox);
+
+    document.getElementById('admin-gate-btn').addEventListener('click', async function () {
+      var token = document.getElementById('admin-gate-pass').value.trim();
+      var errEl = document.getElementById('admin-gate-msg');
+      var btn   = this;
+      if (!token) { errEl.textContent = 'Enter your admin token.'; errEl.style.display = 'block'; return; }
+      btn.disabled = true; btn.textContent = 'Verifying\u2026';
+      try {
+        var data = await JYB.apiFetch('/api/admin/clients', { headers: { Authorization: 'Bearer ' + token } });
+        if (data.success) {
+          JYB.setAdminToken(token);
+          window.location.reload();
+        } else {
+          errEl.textContent = 'Incorrect token. Try again.'; errEl.style.display = 'block';
+          btn.disabled = false; btn.textContent = 'Enter Admin Portal';
+        }
+      } catch (e) {
+        errEl.textContent = 'Incorrect token. Try again.'; errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Enter Admin Portal';
+      }
+    });
+    document.getElementById('admin-gate-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('admin-gate-btn').click(); });
     return;
   }
 
