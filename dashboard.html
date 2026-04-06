@@ -6,108 +6,213 @@
   <title>My Portal &mdash; JYB</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="/assets/css/portal.css">
+  <style>
+    /* ── Referral / Perks / Classes tab styles ────────────── */
+    .ref-stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:28px; }
+    .ref-stat { background:var(--surface-2,rgba(255,255,255,.04)); border:1px solid var(--border,rgba(255,255,255,.08)); border-radius:10px; padding:18px 20px; }
+    .ref-stat__label { font-size:.68rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted,#8A8F9E); margin-bottom:6px; }
+    .ref-stat__value { font-family:var(--font-head,'Cormorant Garamond'); font-size:1.9rem; font-weight:500; color:var(--text-primary,#F0F2F6); line-height:1; }
+    .ref-stat__sub { font-size:.75rem; color:var(--text-muted,#8A8F9E); margin-top:4px; }
+
+    .ref-link-box { background:rgba(255,255,255,.03); border:1px solid var(--border,rgba(255,255,255,.1)); border-radius:8px; padding:16px 18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:28px; }
+    .ref-link-box__url { font-family:monospace; font-size:.82rem; color:var(--text-primary,#F0F2F6); word-break:break-all; flex:1; }
+
+    .submission-row { background:var(--surface-2,rgba(255,255,255,.04)); border:1px solid var(--border,rgba(255,255,255,.08)); border-radius:8px; padding:14px 18px; margin-bottom:10px; }
+    .submission-row__name { font-weight:600; font-size:.95rem; color:var(--text-primary,#F0F2F6); }
+    .submission-row__meta { font-size:.78rem; color:var(--text-muted,#8A8F9E); margin-top:3px; }
+
+    .commission-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:12px 16px; background:var(--surface-2,rgba(255,255,255,.04)); border:1px solid var(--border,rgba(255,255,255,.08)); border-radius:8px; margin-bottom:10px; }
+    .commission-row__amount { font-family:var(--font-head,'Cormorant Garamond'); font-size:1.3rem; font-weight:600; color:var(--text-primary,#F0F2F6); }
+
+    .perk-card { background:var(--surface-2,rgba(255,255,255,.04)); border:1px solid var(--border,rgba(255,255,255,.1)); border-radius:10px; padding:22px 24px; margin-bottom:14px; }
+    .perk-card__label { font-size:.68rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted,#8A8F9E); margin-bottom:8px; }
+    .perk-card__value { font-family:var(--font-head,'Cormorant Garamond'); font-size:1.6rem; font-weight:500; color:var(--text-primary,#F0F2F6); margin-bottom:8px; }
+    .perk-card__desc { font-size:.85rem; color:var(--text-muted,#8A8F9E); line-height:1.6; }
+
+    .class-card { background:var(--surface-2,rgba(255,255,255,.04)); border:1px solid var(--border,rgba(255,255,255,.1)); border-radius:10px; padding:20px 24px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    .class-card__name { font-family:var(--font-head,'Cormorant Garamond'); font-size:1.2rem; font-weight:500; color:var(--text-primary,#F0F2F6); }
+    .class-card__desc { font-size:.8rem; color:var(--text-muted,#8A8F9E); margin-top:3px; }
+
+    .join-referral-banner { background:linear-gradient(135deg, rgba(194,200,212,.06) 0%, rgba(194,200,212,.02) 100%); border:1px solid rgba(194,200,212,.15); border-radius:10px; padding:24px 28px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+    .join-referral-banner__text h3 { font-family:var(--font-head,'Cormorant Garamond'); font-size:1.3rem; font-weight:500; color:var(--text-primary,#F0F2F6); margin:0 0 4px; }
+    .join-referral-banner__text p { font-size:.83rem; color:var(--text-muted,#8A8F9E); margin:0; line-height:1.5; }
+
+    /* Submit referral form */
+    .ref-submit-form { background:rgba(255,255,255,.03); border:1px solid var(--border,rgba(255,255,255,.1)); border-radius:8px; padding:20px; margin-top:16px; display:none; }
+    .ref-submit-form.open { display:block; }
+  </style>
 </head>
 <body>
 
 <!-- Nav -->
 <nav class="portal-nav">
-  <a href="/dashboard.html" class="nav-brand">
-    <span class="nav-logo-text">JYB</span>
-  </a>
+  <a href="/dashboard.html" class="nav-brand"><span class="nav-logo-text">JYB</span></a>
   <div class="nav-spacer"></div>
   <span class="nav-label" id="nav-client-label">Loading&hellip;</span>
   <button class="btn btn-ghost btn-sm" onclick="JYB.signOut()">Sign Out</button>
 </nav>
 
-<!-- Tab Bar -->
-<div class="tab-bar" id="tab-bar" role="tablist">
-  <button class="tab-btn" role="tab" data-tab="overview">Overview</button>
-  <button class="tab-btn" role="tab" data-tab="projects">Projects</button>
-  <button class="tab-btn" role="tab" data-tab="invoices">Invoices</button>
-  <button class="tab-btn" role="tab" data-tab="meetings">Meetings</button>
-  <button class="tab-btn" role="tab" data-tab="files">Files</button>
-</div>
+<!-- Tab Bar — built dynamically -->
+<div class="tab-bar" id="tab-bar" role="tablist"></div>
 
-<!-- Loading state -->
-<div id="global-spinner" class="spinner-wrap">
-  <div class="spinner"></div>
-</div>
+<!-- Loading -->
+<div id="global-spinner" class="spinner-wrap"><div class="spinner"></div></div>
 
-<!-- Error state -->
+<!-- Error -->
 <div id="global-error" class="tab-content" style="display:none; max-width:600px; padding:40px 24px;">
   <div class="msg msg-error visible" id="global-error-msg"></div>
   <button class="btn btn-outline btn-sm mt-sm" onclick="window.location.reload()">Retry</button>
 </div>
 
-<!-- Tab Content -->
+<!-- Tab Contents -->
 <div id="tab-contents" style="display:none;">
 
-  <!-- Tab 1: Overview -->
+  <!-- ── Overview ─────────────────────────────────────────── -->
   <section class="tab-content" id="tab-overview" role="tabpanel">
-
-    <!-- Stat cards -->
     <div class="card-grid mb-md" id="stat-cards"></div>
+    <div id="join-referral-promo"></div>
 
-    <!-- Current Projects -->
-    <div class="divider"></div>
-    <div class="section-header mt-md">
-      <span class="section-title">Current Projects</span>
+    <div id="overview-client-section">
+      <div class="divider"></div>
+      <div class="section-header mt-md">
+        <span class="section-title">Current Projects</span>
+      </div>
+      <div id="overview-projects" class="project-list mb-md"></div>
+
+      <div class="divider"></div>
+      <div class="section-header mt-md">
+        <span class="section-title">Recent Invoice</span>
+      </div>
+      <div id="overview-invoice"></div>
     </div>
-    <div id="overview-projects" class="project-list mb-md"></div>
 
-    <!-- Recent Invoice -->
-    <div class="divider"></div>
-    <div class="section-header mt-md">
-      <span class="section-title">Recent Invoice</span>
+    <div id="overview-referral-section" style="display:none;">
+      <div class="divider"></div>
+      <div class="section-header mt-md">
+        <span class="section-title">Your Referral Link</span>
+      </div>
+      <div id="overview-ref-link" class="mb-md"></div>
     </div>
-    <div id="overview-invoice"></div>
-
   </section>
 
-  <!-- Tab 2: Projects -->
+  <!-- ── Projects ─────────────────────────────────────────── -->
   <section class="tab-content" id="tab-projects" role="tabpanel">
-    <div class="section-header">
-      <span class="section-title">All Projects</span>
-    </div>
+    <div class="section-header"><span class="section-title">All Projects</span></div>
     <div id="projects-list" class="project-list"></div>
   </section>
 
-  <!-- Tab 3: Invoices -->
+  <!-- ── Invoices ─────────────────────────────────────────── -->
   <section class="tab-content" id="tab-invoices" role="tabpanel">
-    <div class="section-header">
-      <span class="section-title">Invoices</span>
-    </div>
+    <div class="section-header"><span class="section-title">Invoices</span></div>
     <div class="invoice-table-wrap">
       <table class="invoice-table">
-        <thead>
-          <tr>
-            <th>Invoice #</th>
-            <th>Issued</th>
-            <th>Due</th>
-            <th>Amount</th>
-            <th>Status</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Invoice #</th><th>Issued</th><th>Due</th><th>Amount</th><th>Status</th></tr></thead>
         <tbody id="invoices-tbody"></tbody>
       </table>
     </div>
     <div id="invoice-totals" class="invoice-totals mt-md"></div>
   </section>
 
-  <!-- Tab 4: Meetings -->
+  <!-- ── Meetings ─────────────────────────────────────────── -->
   <section class="tab-content" id="tab-meetings" role="tabpanel">
-    <div class="section-header">
-      <span class="section-title">Meeting Notes</span>
-    </div>
+    <div class="section-header"><span class="section-title">Meeting Notes</span></div>
     <div id="meetings-list" class="meeting-list"></div>
   </section>
 
-  <!-- Tab 5: Files -->
+  <!-- ── Files ────────────────────────────────────────────── -->
   <section class="tab-content" id="tab-files" role="tabpanel">
-    <div class="section-header">
-      <span class="section-title">Deliverables &amp; Files</span>
-    </div>
+    <div class="section-header"><span class="section-title">Deliverables &amp; Files</span></div>
     <div id="files-grid" class="files-grid"></div>
+  </section>
+
+  <!-- ── Perks ─────────────────────────────────────────────── -->
+  <section class="tab-content" id="tab-perks" role="tabpanel">
+    <div class="section-header"><span class="section-title">Client Perks</span></div>
+    <p style="font-size:.88rem;color:var(--text-muted,#8A8F9E);margin-bottom:28px;">
+      These are exclusive benefits for JYB clients &mdash; a thank-you for trusting us with your business.
+    </p>
+    <div id="perks-list"></div>
+  </section>
+
+  <!-- ── My Referrals ──────────────────────────────────────── -->
+  <section class="tab-content" id="tab-referrals" role="tabpanel">
+    <div class="section-header" style="justify-content:space-between;">
+      <span class="section-title">My Referrals</span>
+      <button class="btn btn-outline btn-sm" onclick="toggleSubmitForm()">+ Submit a Referral</button>
+    </div>
+
+    <!-- Referral stats -->
+    <div class="ref-stat-grid" id="ref-stat-grid"></div>
+
+    <!-- Referral link -->
+    <div class="section-header"><span class="section-title">Your Referral Link</span></div>
+    <div id="ref-link-box" class="ref-link-box mb-md">
+      <span class="ref-link-box__url" id="ref-link-url"></span>
+      <button class="btn btn-outline btn-sm" id="copy-ref-link">Copy Link</button>
+    </div>
+
+    <!-- Submit a referral (inline form, hidden by default) -->
+    <div class="ref-submit-form" id="ref-submit-form">
+      <h3 style="font-family:var(--font-head,'Cormorant Garamond');font-size:1.1rem;font-weight:500;color:var(--text-primary,#F0F2F6);margin:0 0 16px;">Tell Us About Your Referral</h3>
+      <div class="form-grid mb-sm">
+        <div class="form-group">
+          <label class="form-label" for="ref-person-name">Their Name <span style="color:var(--red)">*</span></label>
+          <input id="ref-person-name" type="text" class="form-input" placeholder="Jane Smith">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ref-person-email">Their Email</label>
+          <input id="ref-person-email" type="email" class="form-input" placeholder="jane@business.com">
+        </div>
+      </div>
+      <div class="form-grid mb-sm">
+        <div class="form-group">
+          <label class="form-label" for="ref-business">Business Name</label>
+          <input id="ref-business" type="text" class="form-input" placeholder="Acme Bakery">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="ref-service">Service They Need</label>
+          <select id="ref-service" class="form-select">
+            <option value="">Not sure / other</option>
+            <option value="presence">Presence Plan ($999/mo)</option>
+            <option value="partner">Partner Plan ($1,999/mo)</option>
+            <option value="full-service">Full Service ($3,999/mo)</option>
+            <option value="fast-track">Fast Track Website ($2,499)</option>
+            <option value="full-build">Full Build ($5,499)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group mb-sm">
+        <label class="form-label" for="ref-notes">Notes (optional)</label>
+        <textarea id="ref-notes" class="form-textarea" style="min-height:60px;" placeholder="Anything helpful about them&hellip;"></textarea>
+      </div>
+      <div id="ref-submit-msg" class="msg mb-sm"></div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="toggleSubmitForm()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitReferral()">Submit Referral</button>
+      </div>
+    </div>
+
+    <!-- Submissions table -->
+    <div class="section-header mt-md"><span class="section-title">Submission History</span></div>
+    <div id="ref-submissions"></div>
+  </section>
+
+  <!-- ── Commissions ───────────────────────────────────────── -->
+  <section class="tab-content" id="tab-commissions" role="tabpanel">
+    <div class="section-header"><span class="section-title">Commissions</span></div>
+    <div id="commissions-totals" class="ref-stat-grid" style="margin-bottom:24px;"></div>
+    <div class="section-header mt-md"><span class="section-title">Commission History</span></div>
+    <div id="commissions-list"></div>
+    <div id="commissions-payout-info" style="margin-top:20px;font-size:.82rem;color:var(--text-muted,#8A8F9E);"></div>
+  </section>
+
+  <!-- ── My Classes ────────────────────────────────────────── -->
+  <section class="tab-content" id="tab-classes" role="tabpanel">
+    <div class="section-header"><span class="section-title">My Classes</span></div>
+    <p style="font-size:.88rem;color:var(--text-muted,#8A8F9E);margin-bottom:24px;">
+      Your enrolled programs and learning resources. New sessions are added as they become available.
+    </p>
+    <div id="classes-list"></div>
   </section>
 
 </div>
@@ -118,117 +223,186 @@
 
   // ── Auth guard ──────────────────────────────────────────
   var client = JYB.getClient();
-  if (!client) {
-    window.location.replace('/login.html');
-    return;
-  }
+  if (!client) { window.location.replace('/login.html'); return; }
+
+  // ── Role helpers ────────────────────────────────────────
+  var roles = client.portal_roles || ['client'];
+  function hasRole(r) { return roles.includes(r); }
+  var isClient   = hasRole('client');
+  var isReferral = hasRole('referral');
+  var isStudent  = hasRole('student');
 
   // ── DOM refs ────────────────────────────────────────────
-  var navLabel       = document.getElementById('nav-client-label');
-  var spinner        = document.getElementById('global-spinner');
-  var errorBox       = document.getElementById('global-error');
-  var errorMsg       = document.getElementById('global-error-msg');
-  var tabContents    = document.getElementById('tab-contents');
-  var tabBar         = document.getElementById('tab-bar');
+  var navLabel    = document.getElementById('nav-client-label');
+  var spinner     = document.getElementById('global-spinner');
+  var errorBox    = document.getElementById('global-error');
+  var errorMsg    = document.getElementById('global-error-msg');
+  var tabContents = document.getElementById('tab-contents');
+  var tabBar      = document.getElementById('tab-bar');
 
-  navLabel.textContent = client.name || client.email || 'Client';
+  navLabel.textContent = client.name || client.email || 'Portal';
 
-  // ── Tab management ──────────────────────────────────────
-  var tabBtns     = tabBar.querySelectorAll('.tab-btn');
-  var tabPanels   = document.querySelectorAll('.tab-content');
-  var activeTab   = 'overview';
+  // ── Build tab bar ────────────────────────────────────────
+  var tabs = [{ id: 'overview', label: 'Overview' }];
+  if (isClient) {
+    tabs.push(
+      { id: 'projects',    label: 'Projects' },
+      { id: 'invoices',    label: 'Invoices' },
+      { id: 'meetings',    label: 'Meetings' },
+      { id: 'files',       label: 'Files' },
+      { id: 'perks',       label: 'Perks' }
+    );
+  }
+  if (isReferral) {
+    tabs.push(
+      { id: 'referrals',   label: 'My Referrals' },
+      { id: 'commissions', label: 'Commissions' }
+    );
+  }
+  if (isStudent) {
+    tabs.push({ id: 'classes', label: 'My Classes' });
+  }
 
-  tabBtns.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var tab = btn.dataset.tab;
-      activateTab(tab);
-    });
+  tabs.forEach(function (t) {
+    var btn = document.createElement('button');
+    btn.className = 'tab-btn';
+    btn.setAttribute('role', 'tab');
+    btn.dataset.tab = t.id;
+    btn.textContent = t.label;
+    btn.addEventListener('click', function () { activateTab(t.id); });
+    tabBar.appendChild(btn);
   });
 
   function activateTab(tab) {
-    activeTab = tab;
-    tabBtns.forEach(function (b) {
+    document.querySelectorAll('.tab-btn').forEach(function (b) {
       b.classList.toggle('active', b.dataset.tab === tab);
     });
-    tabPanels.forEach(function (p) {
+    document.querySelectorAll('.tab-content').forEach(function (p) {
       p.classList.toggle('active', p.id === 'tab-' + tab);
     });
   }
-
   activateTab('overview');
 
-  // ── Fetch dashboard data ────────────────────────────────
-  async function loadDashboard() {
+  // ── Show/hide overview sections by role ─────────────────
+  if (!isClient) document.getElementById('overview-client-section').style.display = 'none';
+
+  // ── Load all data ────────────────────────────────────────
+  async function loadAll() {
     try {
-      var data = await JYB.clientFetch('/api/client/' + client.id + '/dashboard');
+      var promises = [];
+      var dashData = null;
+      var refData  = null;
+
+      if (isClient) {
+        promises.push(
+          JYB.clientFetch('/api/client/' + client.id + '/dashboard').then(function (d) { dashData = d; })
+        );
+      }
+      if (isReferral) {
+        promises.push(
+          JYB.clientFetch('/api/client/' + client.id + '/referral').then(function (d) { refData = d; })
+        );
+      }
+
+      await Promise.all(promises);
 
       spinner.style.display = 'none';
       tabContents.style.display = '';
 
-      renderOverview(data);
-      renderProjects(data.projects || []);
-      renderInvoices(data.invoices || []);
-      renderMeetings(data.meetings || []);
-      renderFiles(data.deliverables || []);
+      renderOverview(dashData, refData);
+      if (dashData) {
+        renderProjects(dashData.projects || []);
+        renderInvoices(dashData.invoices || []);
+        renderMeetings(dashData.meetings || []);
+        renderFiles(dashData.deliverables || []);
+      }
+      if (isClient)   renderPerks();
+      if (isReferral) renderReferral(refData || { submissions: [], commissions: [], stats: {} });
+      if (isStudent)  renderClasses();
 
-    } catch (err) {
+    } catch (e) {
       spinner.style.display = 'none';
       errorBox.style.display = 'block';
-      JYB.showMsg(errorMsg, err.message || 'Failed to load your portal. Please try again.', 'error');
+      JYB.showMsg(errorMsg, e.message || 'Failed to load portal. Please try again.', 'error');
     }
   }
 
-  // ── Overview ────────────────────────────────────────────
-  function renderOverview(data) {
-    var projects     = data.projects     || [];
-    var invoices     = data.invoices     || [];
-    var meetings     = data.meetings     || [];
+  // ── Overview ─────────────────────────────────────────────
+  function renderOverview(dash, ref) {
+    var statCards = [];
 
-    var activeProjects = projects.filter(function (p) { return p.status !== 'completed' && p.status !== 'cancelled'; });
-    var unpaidInvoices = invoices.filter(function (i) { return i.status !== 'paid' && i.status !== 'cancelled'; });
-    var unpaidTotal    = unpaidInvoices.reduce(function (sum, i) { return sum + (i.amount_cents || 0); }, 0);
+    if (isClient && dash) {
+      var projects     = dash.projects || [];
+      var invoices     = dash.invoices || [];
+      var meetings     = dash.meetings || [];
+      var active       = projects.filter(function (p) { return p.status !== 'completed' && p.status !== 'cancelled'; });
+      var unpaid       = invoices.filter(function (i) { return i.status !== 'paid' && i.status !== 'cancelled'; });
+      var unpaidTotal  = unpaid.reduce(function (s, i) { return s + (i.amount_cents || 0); }, 0);
+      var actionCount  = 0;
+      var latestMtg    = meetings[0] || null;
+      if (latestMtg && latestMtg.action_items) {
+        try {
+          var ai = typeof latestMtg.action_items === 'string' ? JSON.parse(latestMtg.action_items) : latestMtg.action_items;
+          actionCount = Array.isArray(ai) ? ai.length : 0;
+        } catch (e) {}
+      }
 
-    // Pending action items from latest meeting
-    var latestMeeting   = meetings[0] || null;
-    var actionCount     = 0;
-    if (latestMeeting && latestMeeting.action_items) {
-      try {
-        var items = typeof latestMeeting.action_items === 'string'
-          ? JSON.parse(latestMeeting.action_items)
-          : latestMeeting.action_items;
-        actionCount = Array.isArray(items) ? items.length : 0;
-      } catch (e) { actionCount = 0; }
-    }
+      statCards.push(statCard('Active Projects',  active.length,  null, null));
+      statCards.push(statCard('Unpaid Invoices',  unpaid.length,  unpaidTotal > 0 ? JYB.formatMoney(unpaidTotal) + ' outstanding' : null, unpaid.length > 0 ? 'amber' : null));
+      statCards.push(statCard('Action Items',     actionCount,    actionCount > 0 ? 'From last meeting' : 'All clear', actionCount > 0 ? 'amber' : 'green'));
 
-    document.getElementById('stat-cards').innerHTML =
-      statCard('Active Projects',  activeProjects.length, null) +
-      statCard('Unpaid Invoices',  unpaidInvoices.length, unpaidTotal > 0 ? JYB.formatMoney(unpaidTotal) + ' outstanding' : null, unpaidInvoices.length > 0 ? 'amber' : null) +
-      statCard('Action Items',     actionCount,            actionCount > 0 ? 'From last meeting' : 'All clear', actionCount > 0 ? 'amber' : 'green');
-
-    // Current projects (active only, max 3)
-    var overviewProjects = document.getElementById('overview-projects');
-    if (activeProjects.length === 0) {
-      overviewProjects.innerHTML = '<div class="empty-state"><p>No active projects right now.</p></div>';
-    } else {
-      overviewProjects.innerHTML = activeProjects.slice(0, 3).map(projectCard).join('');
-    }
-
-    // Recent invoice
-    var invEl = document.getElementById('overview-invoice');
-    if (invoices.length === 0) {
-      invEl.innerHTML = '<div class="empty-state"><p>No invoices yet.</p></div>';
-    } else {
-      var inv = invoices[0];
-      invEl.innerHTML = '<div class="card flex-center gap-sm" style="flex-wrap:wrap;justify-content:space-between;">' +
-        '<div>' +
-          '<div class="font-head" style="font-weight:600;font-size:1rem;">' + JYB.escapeHtml(inv.invoice_number) + '</div>' +
-          '<div class="text-muted" style="font-size:13px;">Due ' + JYB.formatDate(inv.due_date) + '</div>' +
-        '</div>' +
-        '<div class="flex-center gap-sm">' +
+      // Overview projects + invoice
+      var op = document.getElementById('overview-projects');
+      if (active.length === 0) {
+        op.innerHTML = '<div class="empty-state"><p>No active projects right now.</p></div>';
+      } else {
+        op.innerHTML = active.slice(0, 3).map(projectCard).join('');
+      }
+      var invEl = document.getElementById('overview-invoice');
+      if (invoices.length === 0) {
+        invEl.innerHTML = '<div class="empty-state"><p>No invoices yet.</p></div>';
+      } else {
+        var inv = invoices[0];
+        invEl.innerHTML = '<div class="card flex-center gap-sm" style="flex-wrap:wrap;justify-content:space-between;">' +
+          '<div><div class="font-head" style="font-weight:600;font-size:1rem;">' + JYB.escapeHtml(inv.invoice_number) + '</div>' +
+          '<div class="text-muted" style="font-size:13px;">Due ' + JYB.formatDate(inv.due_date) + '</div></div>' +
+          '<div class="flex-center gap-sm">' +
           '<span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">' + JYB.formatMoney(inv.amount_cents) + '</span>' +
-          JYB.statusBadge(inv.status) +
-        '</div>' +
-      '</div>';
+          JYB.statusBadge(inv.status) + '</div></div>';
+      }
+    }
+
+    if (isReferral && ref && ref.stats) {
+      var stats = ref.stats;
+      statCards.push(statCard('Referrals Sent', stats.total_referred || 0, null, null));
+      statCards.push(statCard('Signed Clients', stats.signed || 0, null, stats.signed > 0 ? 'green' : null));
+      statCards.push(statCard('Commissions Owed', JYB.formatMoney(stats.commissions_owed_cents || 0), null, stats.commissions_owed_cents > 0 ? 'amber' : null));
+
+      // Referral link in overview
+      var ovRefSection = document.getElementById('overview-referral-section');
+      if (client.referral_code) {
+        ovRefSection.style.display = '';
+        var refUrl = 'https://jinyerbalance.com?ref=' + client.referral_code;
+        document.getElementById('overview-ref-link').innerHTML =
+          '<div class="ref-link-box">' +
+          '<span class="ref-link-box__url">' + JYB.escapeHtml(refUrl) + '</span>' +
+          '<button class="btn btn-outline btn-sm" onclick="JYB.copyText(\'' + JYB.escapeHtml(refUrl) + '\', this)">Copy Link</button>' +
+          '</div>';
+      }
+    }
+
+    document.getElementById('stat-cards').innerHTML = statCards.join('');
+
+    // Show "join referral" promo if client but not referral
+    if (isClient && !isReferral) {
+      document.getElementById('join-referral-promo').innerHTML =
+        '<div class="join-referral-banner">' +
+          '<div class="join-referral-banner__text">' +
+            '<h3>Earn with Us</h3>' +
+            '<p>Know a business that could use our help? Refer them and earn 15% of their first invoice, plus 10% every month they stay on retainer.</p>' +
+          '</div>' +
+          '<button class="btn btn-outline btn-sm" onclick="openJoinReferralModal()">Apply to Join</button>' +
+        '</div>';
     }
   }
 
@@ -243,78 +417,42 @@
 
   // ── Projects ─────────────────────────────────────────────
   function projectCard(p) {
-    var deliverables = '';
-    if (p.deliverables) {
-      try {
-        var items = typeof p.deliverables === 'string'
-          ? JSON.parse(p.deliverables)
-          : p.deliverables;
-        if (Array.isArray(items) && items.length > 0) {
-          deliverables = '<ul class="project-deliverables">' +
-            items.map(function (d) { return '<li>' + JYB.escapeHtml(d) + '</li>'; }).join('') +
-          '</ul>';
-        }
-      } catch (e) {}
-    }
-
     return '<div class="project-card">' +
-      '<div class="project-header">' +
-        '<span class="project-title">' + JYB.escapeHtml(p.title) + '</span>' +
-        JYB.statusBadge(p.status) +
-      '</div>' +
-      '<div class="project-meta">' +
-        JYB.typeBadge(p.type) +
-        '<span class="project-dates">' + JYB.formatDateRange(p.start_date, p.due_date) + '</span>' +
-      '</div>' +
-      deliverables +
+      '<div class="project-header"><span class="project-title">' + JYB.escapeHtml(p.title) + '</span>' + JYB.statusBadge(p.status) + '</div>' +
+      '<div class="project-meta">' + JYB.typeBadge(p.type) + '<span class="project-dates">' + JYB.formatDateRange(p.start_date, p.due_date) + '</span></div>' +
     '</div>';
   }
 
   function renderProjects(projects) {
     var el = document.getElementById('projects-list');
-    if (projects.length === 0) {
-      el.innerHTML = '<div class="empty-state"><p>No projects yet.</p></div>';
-      return;
-    }
-    el.innerHTML = projects.map(projectCard).join('');
+    el.innerHTML = projects.length === 0
+      ? '<div class="empty-state"><p>No projects yet.</p></div>'
+      : projects.map(projectCard).join('');
   }
 
   // ── Invoices ─────────────────────────────────────────────
   function renderInvoices(invoices) {
-    var tbody = document.getElementById('invoices-tbody');
+    var tbody    = document.getElementById('invoices-tbody');
     var totalsEl = document.getElementById('invoice-totals');
-
     if (invoices.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>No invoices yet.</p></div></td></tr>';
-      totalsEl.innerHTML = '';
-      return;
+      totalsEl.innerHTML = ''; return;
     }
-
     tbody.innerHTML = invoices.map(function (inv, idx) {
       var lineItemsHtml = '';
       if (inv.line_items) {
         try {
-          var items = typeof inv.line_items === 'string'
-            ? JSON.parse(inv.line_items)
-            : inv.line_items;
+          var items = typeof inv.line_items === 'string' ? JSON.parse(inv.line_items) : inv.line_items;
           if (Array.isArray(items) && items.length > 0) {
-            lineItemsHtml = '<tr class="invoice-expand-row" id="expand-' + idx + '" style="display:none;">' +
-              '<td colspan="5">' +
-                '<div class="invoice-line-items">' +
-                  '<h4>Line Items</h4>' +
-                  items.map(function (li) {
-                    return '<div class="line-item-row">' +
-                      '<span>' + JYB.escapeHtml(li.description || '') + '</span>' +
-                      '<span>' + JYB.formatMoney(li.amount_cents || (li.amount ? li.amount * 100 : 0)) + '</span>' +
-                    '</div>';
-                  }).join('') +
-                '</div>' +
-              '</td>' +
-            '</tr>';
+            lineItemsHtml = '<tr class="invoice-expand-row" id="expand-' + idx + '" style="display:none;"><td colspan="5">' +
+              '<div class="invoice-line-items"><h4>Line Items</h4>' +
+              items.map(function (li) {
+                return '<div class="line-item-row"><span>' + JYB.escapeHtml(li.description || '') + '</span>' +
+                  '<span>' + JYB.formatMoney(li.amount_cents || (li.amount ? li.amount * 100 : 0)) + '</span></div>';
+              }).join('') + '</div></td></tr>';
           }
         } catch (e) {}
       }
-
       return '<tr onclick="toggleInvoice(' + idx + ', this)" id="inv-row-' + idx + '">' +
         '<td class="font-head" style="font-weight:600;">' + JYB.escapeHtml(inv.invoice_number) + '</td>' +
         '<td>' + JYB.formatDate(inv.issued_date) + '</td>' +
@@ -324,100 +462,290 @@
       '</tr>' + lineItemsHtml;
     }).join('');
 
-    // Totals
-    var totalPaid = invoices
-      .filter(function (i) { return i.status === 'paid'; })
-      .reduce(function (s, i) { return s + (i.amount_cents || 0); }, 0);
-    var totalUnpaid = invoices
-      .filter(function (i) { return i.status !== 'paid' && i.status !== 'cancelled'; })
-      .reduce(function (s, i) { return s + (i.amount_cents || 0); }, 0);
-
+    var totalPaid   = invoices.filter(function (i) { return i.status === 'paid'; }).reduce(function (s, i) { return s + (i.amount_cents || 0); }, 0);
+    var totalUnpaid = invoices.filter(function (i) { return i.status !== 'paid' && i.status !== 'cancelled'; }).reduce(function (s, i) { return s + (i.amount_cents || 0); }, 0);
     totalsEl.innerHTML =
-      '<div class="invoice-total-item">' +
-        '<span class="invoice-total-label">Total Paid</span>' +
-        '<span class="invoice-total-value paid">' + JYB.formatMoney(totalPaid) + '</span>' +
-      '</div>' +
-      '<div class="invoice-total-item">' +
-        '<span class="invoice-total-label">Total Outstanding</span>' +
-        '<span class="invoice-total-value unpaid">' + JYB.formatMoney(totalUnpaid) + '</span>' +
-      '</div>';
+      '<div class="invoice-total-item"><span class="invoice-total-label">Total Paid</span><span class="invoice-total-value paid">' + JYB.formatMoney(totalPaid) + '</span></div>' +
+      '<div class="invoice-total-item"><span class="invoice-total-label">Total Outstanding</span><span class="invoice-total-value unpaid">' + JYB.formatMoney(totalUnpaid) + '</span></div>';
   }
 
   window.toggleInvoice = function (idx, row) {
-    var expandRow = document.getElementById('expand-' + idx);
-    if (!expandRow) return;
-    var isOpen = expandRow.style.display !== 'none';
-    expandRow.style.display = isOpen ? 'none' : 'table-row';
+    var er = document.getElementById('expand-' + idx);
+    if (!er) return;
+    var isOpen = er.style.display !== 'none';
+    er.style.display = isOpen ? 'none' : 'table-row';
     row.classList.toggle('expanded', !isOpen);
   };
 
   // ── Meetings ─────────────────────────────────────────────
   function renderMeetings(meetings) {
     var el = document.getElementById('meetings-list');
-    if (meetings.length === 0) {
-      el.innerHTML = '<div class="empty-state"><p>No meeting notes yet.</p></div>';
-      return;
-    }
-
+    if (meetings.length === 0) { el.innerHTML = '<div class="empty-state"><p>No meeting notes yet.</p></div>'; return; }
     el.innerHTML = meetings.map(function (m) {
       var actionItems = '';
       if (m.action_items) {
         try {
-          var items = typeof m.action_items === 'string'
-            ? JSON.parse(m.action_items)
-            : m.action_items;
+          var items = typeof m.action_items === 'string' ? JSON.parse(m.action_items) : m.action_items;
           if (Array.isArray(items) && items.length > 0) {
-            actionItems =
-              '<div class="action-items-label">Action Items</div>' +
-              '<ul class="action-items-list">' +
+            actionItems = '<div class="action-items-label">Action Items</div><ul class="action-items-list">' +
               items.map(function (a) {
-                var text = typeof a === 'string' ? a : (a.text || a.item || JSON.stringify(a));
-                return '<li class="action-item">' + JYB.escapeHtml(text) + '</li>';
-              }).join('') +
-              '</ul>';
+                return '<li class="action-item">' + JYB.escapeHtml(typeof a === 'string' ? a : (a.text || a.item || '')) + '</li>';
+              }).join('') + '</ul>';
           }
         } catch (e) {}
       }
-
-      return '<div class="meeting-card">' +
-        '<div class="meeting-date">' + JYB.formatDate(m.meeting_date) + '</div>' +
-        '<div class="meeting-summary">' + JYB.escapeHtml(m.summary) + '</div>' +
-        actionItems +
-      '</div>';
+      return '<div class="meeting-card"><div class="meeting-date">' + JYB.formatDate(m.meeting_date) + '</div>' +
+        '<div class="meeting-summary">' + JYB.escapeHtml(m.summary) + '</div>' + actionItems + '</div>';
     }).join('');
   }
 
   // ── Files ────────────────────────────────────────────────
   function renderFiles(deliverables) {
     var el = document.getElementById('files-grid');
-    if (deliverables.length === 0) {
-      el.innerHTML = '<div class="empty-state"><p>No files yet. Deliverables will appear here when ready.</p></div>';
-      return;
-    }
-
+    if (deliverables.length === 0) { el.innerHTML = '<div class="empty-state"><p>No files yet. Deliverables will appear here when ready.</p></div>'; return; }
     el.innerHTML = deliverables.map(function (d) {
-      var downloadBtn = '';
-      if (d.file_url) {
-        downloadBtn = '<a href="' + JYB.escapeHtml(d.file_url) + '" target="_blank" rel="noopener" class="btn btn-outline btn-sm">Download</a>';
-      }
-
+      var dl = d.file_url ? '<a href="' + JYB.escapeHtml(d.file_url) + '" target="_blank" rel="noopener" class="btn btn-outline btn-sm">Download</a>' : '';
       return '<div class="file-card">' +
         '<div class="file-title">' + JYB.escapeHtml(d.title) + '</div>' +
         '<div class="file-desc">' + JYB.escapeHtml(d.description || '') + '</div>' +
-        '<div class="file-meta">' +
-          JYB.statusBadge(d.status || 'pending') +
-          '<span class="file-due">' + (d.due_date ? 'Due ' + JYB.formatDate(d.due_date) : '') + '</span>' +
-        '</div>' +
-        (downloadBtn ? '<div class="mt-xs">' + downloadBtn + '</div>' : '') +
+        '<div class="file-meta">' + JYB.statusBadge(d.status || 'pending') + '<span class="file-due">' + (d.due_date ? 'Due ' + JYB.formatDate(d.due_date) : '') + '</span></div>' +
+        (dl ? '<div class="mt-xs">' + dl + '</div>' : '') + '</div>';
+    }).join('');
+  }
+
+  // ── Perks ─────────────────────────────────────────────────
+  var CLASS_CATALOG = {
+    'spanish-classes': { name: 'Spanish Classes', desc: 'Conversational Spanish for everyday life. Weekly sessions, bilingual materials.', url: 'https://jinyerbalance.com/classes/spanish' },
+    'aiconics-101':    { name: 'Aiconics 101', desc: 'Introduction to AI tools for small business owners. Self-paced.', url: 'https://jinyerbalance.com/classes/aiconics' },
+  };
+
+  function renderPerks() {
+    var el = document.getElementById('perks-list');
+    var html = '';
+
+    // Discount code
+    if (client.discount_code) {
+      html += '<div class="perk-card">' +
+        '<div class="perk-card__label">Exclusive Client Discount</div>' +
+        '<div class="perk-card__value">' + JYB.escapeHtml(client.discount_code) + '</div>' +
+        '<div class="perk-card__desc">' + (client.discount_pct || 10) + '% off your next purchase in the JYB store. Just enter the code at checkout.' +
+          '<br><button class="btn btn-ghost btn-sm mt-xs" onclick="JYB.copyText(\'' + JYB.escapeHtml(client.discount_code) + '\', this)">Copy Code</button></div>' +
+      '</div>';
+    }
+
+    // Store discount info
+    html += '<div class="perk-card">' +
+      '<div class="perk-card__label">Priority Access</div>' +
+      '<div class="perk-card__value">First to Know</div>' +
+      '<div class="perk-card__desc">As a JYB client, you get early access to new services, limited-run merch drops, and workshop seats before anyone else. Keep an eye on your inbox.</div>' +
+    '</div>';
+
+    // Referral join CTA
+    if (!isReferral) {
+      html += '<div class="perk-card" style="border-color:rgba(194,200,212,.2);">' +
+        '<div class="perk-card__label">Earn with Us</div>' +
+        '<div class="perk-card__value">Referral Program</div>' +
+        '<div class="perk-card__desc">Refer a business to JYB and earn 15% of their first invoice, plus 10% monthly for as long as they stay on retainer. No cap, no limit.' +
+          '<br><button class="btn btn-outline btn-sm mt-xs" onclick="openJoinReferralModal()">Apply to Join &rarr;</button></div>' +
+      '</div>';
+    }
+
+    el.innerHTML = html || '<div class="empty-state"><p>No perks available yet.</p></div>';
+  }
+
+  // ── Referral ──────────────────────────────────────────────
+  function renderReferral(data) {
+    var stats = data.stats || {};
+    var subs  = data.submissions || [];
+    var comms = data.commissions || [];
+
+    // Stats
+    var statGrid = document.getElementById('ref-stat-grid');
+    statGrid.innerHTML =
+      refStat('Referrals Sent',   stats.total_referred || 0, null) +
+      refStat('Signed Clients',   stats.signed || 0, null) +
+      refStat('Total Earned',     JYB.formatMoney(stats.total_earned_cents || 0), null) +
+      refStat('Commissions Owed', JYB.formatMoney(stats.commissions_owed_cents || 0), 'Pending payout');
+
+    // Referral link
+    if (client.referral_code) {
+      var refUrl = 'https://jinyerbalance.com?ref=' + client.referral_code;
+      document.getElementById('ref-link-url').textContent = refUrl;
+      document.getElementById('copy-ref-link').onclick = function () {
+        JYB.copyText(refUrl, this);
+      };
+    }
+
+    // Submissions
+    var subEl = document.getElementById('ref-submissions');
+    if (subs.length === 0) {
+      subEl.innerHTML = '<div class="empty-state"><p>No referrals submitted yet. Use the button above to submit your first one.</p></div>';
+    } else {
+      subEl.innerHTML = subs.map(function (s) {
+        return '<div class="submission-row">' +
+          '<div class="submission-row__name">' + JYB.escapeHtml(s.referred_name) + (s.referred_business ? ' &middot; ' + JYB.escapeHtml(s.referred_business) : '') + '</div>' +
+          '<div class="submission-row__meta">' +
+            JYB.statusBadge(s.status) + ' ' +
+            (s.service_interest ? '<span style="font-size:.75rem;color:var(--text-muted,#8A8F9E);">' + JYB.escapeHtml(s.service_interest) + '</span>' : '') +
+            (s.commission_cents > 0 ? ' &middot; <strong>' + JYB.formatMoney(s.commission_cents) + '</strong>' : '') +
+          '</div>' +
+          '<div class="submission-row__meta">Submitted ' + JYB.formatDate(s.date_referred || s.created_at) + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    // Render commissions tab too
+    renderCommissions(comms);
+  }
+
+  function refStat(label, value, sub) {
+    return '<div class="ref-stat">' +
+      '<div class="ref-stat__label">' + JYB.escapeHtml(label) + '</div>' +
+      '<div class="ref-stat__value">' + JYB.escapeHtml(String(value)) + '</div>' +
+      (sub ? '<div class="ref-stat__sub">' + JYB.escapeHtml(sub) + '</div>' : '') +
+    '</div>';
+  }
+
+  function renderCommissions(comms) {
+    var owed = comms.filter(function (c) { return c.status === 'owed'; });
+    var paid = comms.filter(function (c) { return c.status === 'paid'; });
+    var owedTotal = owed.reduce(function (s, c) { return s + (c.amount_cents || 0); }, 0);
+    var paidTotal = paid.reduce(function (s, c) { return s + (c.amount_cents || 0); }, 0);
+
+    document.getElementById('commissions-totals').innerHTML =
+      refStat('Commissions Owed', JYB.formatMoney(owedTotal), owed.length + ' payment' + (owed.length !== 1 ? 's' : '')) +
+      refStat('Total Paid Out',   JYB.formatMoney(paidTotal), paid.length + ' paid');
+
+    var listEl = document.getElementById('commissions-list');
+    if (comms.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><p>No commission records yet. Commissions are created when a referral you submitted signs a contract.</p></div>';
+    } else {
+      listEl.innerHTML = comms.map(function (c) {
+        return '<div class="commission-row">' +
+          '<div>' +
+            '<div class="commission-row__amount">' + JYB.formatMoney(c.amount_cents) + '</div>' +
+            '<div style="font-size:.75rem;color:var(--text-muted,#8A8F9E);">Due ' + JYB.formatDate(c.date_owed) + (c.date_paid ? ' &middot; Paid ' + JYB.formatDate(c.date_paid) : '') + '</div>' +
+          '</div>' +
+          JYB.statusBadge(c.status) +
+        '</div>';
+      }).join('');
+    }
+
+    if (client.referral_payout_method) {
+      document.getElementById('commissions-payout-info').innerHTML =
+        'Payouts sent via <strong>' + JYB.escapeHtml(client.referral_payout_method) + '</strong>' +
+        (client.referral_payout_handle ? ' to <strong>' + JYB.escapeHtml(client.referral_payout_handle) + '</strong>' : '') +
+        ' within 30 days of each client&rsquo;s payment clearing. Minimum payout: $50.';
+    }
+  }
+
+  // ── Classes ──────────────────────────────────────────────
+  function renderClasses() {
+    var classes  = client.classes_access || [];
+    var listEl   = document.getElementById('classes-list');
+    if (classes.length === 0) {
+      listEl.innerHTML = '<div class="empty-state"><p>No classes enrolled yet. Check your email for enrollment details or reach out to us.</p></div>';
+      return;
+    }
+    listEl.innerHTML = classes.map(function (slug) {
+      var info = CLASS_CATALOG[slug] || { name: slug, desc: '', url: '#' };
+      return '<div class="class-card">' +
+        '<div><div class="class-card__name">' + JYB.escapeHtml(info.name) + '</div>' +
+          '<div class="class-card__desc">' + JYB.escapeHtml(info.desc) + '</div></div>' +
+        (info.url && info.url !== '#' ? '<a href="' + JYB.escapeHtml(info.url) + '" class="btn btn-outline btn-sm" target="_blank">Go to Class &rarr;</a>' : '') +
       '</div>';
     }).join('');
   }
 
+  // ── Submit Referral ──────────────────────────────────────
+  window.toggleSubmitForm = function () {
+    var form = document.getElementById('ref-submit-form');
+    form.classList.toggle('open');
+  };
+
+  window.submitReferral = async function () {
+    var nameEl    = document.getElementById('ref-person-name');
+    var emailEl   = document.getElementById('ref-person-email');
+    var bizEl     = document.getElementById('ref-business');
+    var svcEl     = document.getElementById('ref-service');
+    var notesEl   = document.getElementById('ref-notes');
+    var msgEl     = document.getElementById('ref-submit-msg');
+
+    if (!nameEl.value.trim()) {
+      JYB.showMsg(msgEl, 'Please enter their name.', 'error'); return;
+    }
+    JYB.hideMsg(msgEl);
+
+    try {
+      await JYB.clientFetch('/api/client/' + client.id + '/referral/submit', {
+        method: 'POST',
+        body: JSON.stringify({
+          referred_name:     nameEl.value.trim(),
+          referred_email:    emailEl.value.trim() || null,
+          referred_business: bizEl.value.trim() || null,
+          service_interest:  svcEl.value || null,
+          notes:             notesEl.value.trim() || null,
+        }),
+      });
+      JYB.showMsg(msgEl, 'Referral submitted! We\'ll be in touch with them shortly.', 'success');
+      nameEl.value = ''; emailEl.value = ''; bizEl.value = ''; svcEl.value = ''; notesEl.value = '';
+    } catch (e) {
+      JYB.showMsg(msgEl, e.message || 'Failed to submit. Please try again.', 'error');
+    }
+  };
+
+  // ── Join Referral Modal ──────────────────────────────────
+  window.openJoinReferralModal = function () {
+    var backdrop = document.getElementById('join-modal');
+    if (backdrop) { backdrop.classList.remove('hidden'); return; }
+
+    var div = document.createElement('div');
+    div.id = 'join-modal';
+    div.className = 'modal-backdrop';
+    div.innerHTML =
+      '<div class="modal" role="dialog">' +
+        '<h2 class="modal-title">Join the Referral Program</h2>' +
+        '<p class="modal-sub">We\'ll activate your referral link within 1 business day and email you a confirmation.</p>' +
+        '<div class="form-grid mb-sm">' +
+          '<div class="form-group">' +
+            '<label class="form-label">Payout Method</label>' +
+            '<select id="jrm-method" class="form-select"><option value="">Select&hellip;</option><option value="paypal">PayPal</option><option value="venmo">Venmo</option></select>' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label class="form-label">Your PayPal/Venmo Handle</label>' +
+            '<input id="jrm-handle" type="text" class="form-input" placeholder="@yourhandle or email">' +
+          '</div>' +
+        '</div>' +
+        '<div id="jrm-msg" class="msg mb-sm"></div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-ghost" onclick="document.getElementById(\'join-modal\').classList.add(\'hidden\')">Cancel</button>' +
+          '<button class="btn btn-primary" onclick="submitJoinRequest()">Request Access</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(div);
+  };
+
+  window.submitJoinRequest = async function () {
+    var method = document.getElementById('jrm-method').value;
+    var handle = document.getElementById('jrm-handle').value.trim();
+    var msgEl  = document.getElementById('jrm-msg');
+
+    try {
+      await JYB.clientFetch('/api/client/' + client.id + '/referral/request-join', {
+        method: 'POST',
+        body: JSON.stringify({ referral_payout_method: method || null, referral_payout_handle: handle || null }),
+      });
+      JYB.showMsg(msgEl, 'Request submitted! We\'ll activate your referral access within 1 business day.', 'success');
+      setTimeout(function () { document.getElementById('join-modal').classList.add('hidden'); }, 2500);
+    } catch (e) {
+      JYB.showMsg(msgEl, e.message || 'Request failed. Please try again.', 'error');
+    }
+  };
+
   // ── Boot ─────────────────────────────────────────────────
-  loadDashboard();
+  loadAll();
 
 })();
 </script>
-
 </body>
 </html>

@@ -16,7 +16,8 @@ function getClient() {
 }
 
 function getAdminToken() {
-  return sessionStorage.getItem('jyb_admin_token');
+  // localStorage so admin stays logged in across browser sessions
+  return localStorage.getItem('jyb_admin_token') || sessionStorage.getItem('jyb_admin_token');
 }
 
 function setClient(data) {
@@ -24,11 +25,13 @@ function setClient(data) {
 }
 
 function setAdminToken(token) {
-  sessionStorage.setItem('jyb_admin_token', token);
+  localStorage.setItem('jyb_admin_token', token);
+  sessionStorage.setItem('jyb_admin_token', token); // belt-and-suspenders
 }
 
 function signOut() {
   sessionStorage.clear();
+  localStorage.removeItem('jyb_admin_token');
   window.location.href = '/login.html';
 }
 

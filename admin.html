@@ -28,7 +28,12 @@
     <button class="sidebar-btn active" id="nav-clients" onclick="showSection('clients')">All Clients</button>
     <div class="sidebar-divider"></div>
     <div class="sidebar-section-label">Add New</div>
-    <button class="sidebar-btn" id="nav-add-client" onclick="showSection('add-client')">+ Add Client</button>
+    <button class="sidebar-btn" id="nav-add-client" onclick="showSection('add-client')">+ Add Client / Partner</button>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Referrals</div>
+    <button class="sidebar-btn" id="nav-referral-partners" onclick="showSection('referral-partners')">Partners</button>
+    <button class="sidebar-btn" id="nav-referral-submissions" onclick="showSection('referral-submissions')">Submissions</button>
+    <button class="sidebar-btn" id="nav-commissions" onclick="showSection('commissions')">Commissions</button>
   </aside>
 
   <!-- Main content -->
@@ -48,6 +53,53 @@
       <div id="clients-loading" class="spinner-wrap"><div class="spinner"></div></div>
       <div id="clients-list" class="client-list" style="display:none;"></div>
 
+    </section>
+
+    <!-- ── Section: Referral Partners ────────────────────── -->
+    <section id="section-referral-partners" style="display:none;">
+      <div class="section-header mb-md">
+        <h2 style="font-family:var(--font-head);font-size:1.25rem;">Referral Partners</h2>
+        <button class="btn btn-outline btn-sm" onclick="loadReferralPartners()">Refresh</button>
+      </div>
+      <div id="rp-loading" class="spinner-wrap"><div class="spinner"></div></div>
+      <div id="rp-list" style="display:none;"></div>
+    </section>
+
+    <!-- ── Section: Referral Submissions ──────────────────── -->
+    <section id="section-referral-submissions" style="display:none;">
+      <div class="section-header mb-md">
+        <h2 style="font-family:var(--font-head);font-size:1.25rem;">Referral Submissions</h2>
+        <div class="flex-center gap-sm">
+          <select id="sub-filter" class="form-select" style="width:auto;min-width:140px;" onchange="loadSubmissions()">
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="contacted">Contacted</option>
+            <option value="signed">Signed</option>
+            <option value="declined">Declined</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="loadSubmissions()">Refresh</button>
+        </div>
+      </div>
+      <div id="sub-loading" class="spinner-wrap"><div class="spinner"></div></div>
+      <div id="sub-list" style="display:none;"></div>
+    </section>
+
+    <!-- ── Section: Commissions ────────────────────────────── -->
+    <section id="section-commissions" style="display:none;">
+      <div class="section-header mb-md">
+        <h2 style="font-family:var(--font-head);font-size:1.25rem;">Commissions</h2>
+        <div class="flex-center gap-sm">
+          <select id="comm-filter" class="form-select" style="width:auto;min-width:140px;" onchange="loadCommissions()">
+            <option value="owed">Owed</option>
+            <option value="paid">Paid</option>
+            <option value="">All</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="loadCommissions()">Refresh</button>
+        </div>
+      </div>
+      <div id="comm-totals" class="card-grid mb-md" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));"></div>
+      <div id="comm-loading" class="spinner-wrap"><div class="spinner"></div></div>
+      <div id="comm-list" style="display:none;"></div>
     </section>
 
     <!-- ── Section: Add Client ──────────────────────────── -->
@@ -84,8 +136,18 @@
 
           <div class="form-grid mb-sm">
             <div class="form-group">
-              <label class="form-label" for="c-account-type">Account Type <span style="color:var(--red)">*</span></label>
-              <select id="c-account-type" class="form-select" required>
+              <label class="form-label" for="c-portal-roles">Portal Access <span style="color:var(--red)">*</span></label>
+              <select id="c-portal-roles" class="form-select" required onchange="toggleReferralFields()">
+                <option value="client">Client (projects, invoices, files)</option>
+                <option value="referral">Referral Partner only</option>
+                <option value="client,referral">Client + Referral Partner</option>
+                <option value="client,student">Client + Classes</option>
+                <option value="client,referral,student">Client + Referral + Classes</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="c-account-type">Service Type</label>
+              <select id="c-account-type" class="form-select">
                 <option value="">Select type&hellip;</option>
                 <option value="one-time">One-Time Project</option>
                 <option value="retainer">Ongoing Retainer</option>
@@ -94,9 +156,30 @@
                 <option value="store">Store Customer</option>
               </select>
             </div>
+          </div>
+          <div class="form-grid mb-sm">
             <div class="form-group">
               <label class="form-label" for="c-plan">Plan</label>
-              <input id="c-plan" type="text" class="form-input" placeholder="e.g. Standard Care $299/mo">
+              <input id="c-plan" type="text" class="form-input" placeholder="e.g. Partner Plan $1,999/mo">
+            </div>
+          </div>
+          <!-- Referral fields — shown when portal role includes referral -->
+          <div id="c-referral-fields" class="form-grid mb-sm" style="display:none;">
+            <div class="form-group">
+              <label class="form-label" for="c-ref-pct">Commission %</label>
+              <input id="c-ref-pct" type="number" class="form-input" value="15" min="1" max="100" placeholder="15">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="c-ref-payout">Payout Method</label>
+              <select id="c-ref-payout" class="form-select">
+                <option value="">Select&hellip;</option>
+                <option value="paypal">PayPal</option>
+                <option value="venmo">Venmo</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="c-ref-handle">PayPal/Venmo Handle</label>
+              <input id="c-ref-handle" type="text" class="form-input" placeholder="@handle or email">
             </div>
           </div>
 
@@ -139,10 +222,17 @@
       <button class="btn btn-ghost btn-sm mt-xs" id="copy-token-btn" onclick="JYB.copyText(document.getElementById('modal-token').textContent, this)">Copy Token</button>
     </div>
 
-    <div class="form-group mb-md">
+    <div class="form-group mb-sm">
       <label class="form-label">Login URL</label>
       <div class="url-display" id="modal-url"></div>
       <button class="btn btn-ghost btn-sm mt-xs" id="copy-url-btn" onclick="JYB.copyText(document.getElementById('modal-url').textContent, this)">Copy Login URL</button>
+    </div>
+
+    <div class="form-group mb-md" id="modal-ref-code-wrap" style="display:none;">
+      <label class="form-label">Referral Code</label>
+      <div class="token-display" id="modal-ref-code"></div>
+      <p style="font-size:.78rem;color:var(--text-muted,#8A8F9E);margin-top:6px;">Their referral link: <span id="modal-ref-link"></span></p>
+      <button class="btn btn-ghost btn-sm mt-xs" onclick="JYB.copyText('https://jinyerbalance.com?ref='+document.getElementById('modal-ref-code').textContent, this)">Copy Referral Link</button>
     </div>
 
     <div class="modal-actions">
@@ -383,6 +473,11 @@
     if (navBtn) navBtn.classList.add('active');
 
     JYB.hideMsg(adminMsg);
+
+    // Auto-load data for referral sections
+    if (name === 'referral-partners') loadReferralPartners();
+    if (name === 'referral-submissions') loadSubmissions();
+    if (name === 'commissions') loadCommissions();
   };
 
   // ── Load Clients ────────────────────────────────────────
@@ -442,6 +537,7 @@
         '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'projects\', this)">Projects</button>' +
         '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'invoices\', this)">Invoices</button>' +
         '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'meetings\', this)">Meetings</button>' +
+        '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'access\', this)">Access &amp; Roles</button>' +
       '</div>' +
 
       '<div class="client-tab-content active" id="ctab-' + c.id + '-info">' +
@@ -466,7 +562,52 @@
       '<div class="client-tab-content" id="ctab-' + c.id + '-meetings">' +
         '<div id="cmeetings-' + c.id + '" class="meeting-list mb-sm">' + JYB.spinner() + '</div>' +
         '<button class="btn btn-outline btn-sm" onclick="openMeetingModal(\'' + c.id + '\')">+ Add Meeting Note</button>' +
+      '</div>' +
+
+      '<div class="client-tab-content" id="ctab-' + c.id + '-access">' +
+        buildAccessTab(c) +
       '</div>';
+  }
+
+  function buildAccessTab(c) {
+    var roles;
+    try { roles = JSON.parse(c.portal_roles || '["client"]'); } catch(e) { roles = ['client']; }
+    var html = '<div style="font-size:.8rem;color:var(--text-muted,#8A8F9E);margin-bottom:12px;">Current portal access: <strong style="color:var(--text-primary,#F0F2F6);">' + JYB.escapeHtml(roles.join(', ')) + '</strong></div>' +
+      '<div class="flex-center gap-sm flex-wrap mb-sm">' +
+      ['client','referral','student'].map(function (r) {
+        var active = roles.includes(r);
+        return '<button class="btn btn-' + (active ? 'primary' : 'outline') + ' btn-sm" ' +
+          'onclick="toggleRole(\'' + c.id + '\',\'' + r + '\',' + active + ')">' +
+          (active ? '✓ ' : '+ ') + r.charAt(0).toUpperCase() + r.slice(1) + '</button>';
+      }).join('') +
+      '</div>';
+
+    if (roles.includes('referral')) {
+      html += '<div class="form-grid mt-sm" style="grid-template-columns:1fr 1fr 1fr;gap:10px;">' +
+        '<div class="form-group">' +
+          '<label class="form-label" style="font-size:.65rem;">Commission %</label>' +
+          '<input type="number" id="rr-pct-' + c.id + '" class="form-input" style="font-size:.85rem;" value="' + (c.referral_pct || 15) + '" min="1" max="100">' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label" style="font-size:.65rem;">Payout Method</label>' +
+          '<select id="rr-method-' + c.id + '" class="form-select" style="font-size:.85rem;">' +
+            '<option value="">—</option>' +
+            '<option value="paypal"' + (c.referral_payout_method === 'paypal' ? ' selected' : '') + '>PayPal</option>' +
+            '<option value="venmo"' + (c.referral_payout_method === 'venmo' ? ' selected' : '') + '>Venmo</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="form-group">' +
+          '<label class="form-label" style="font-size:.65rem;">Handle / Email</label>' +
+          '<input type="text" id="rr-handle-' + c.id + '" class="form-input" style="font-size:.85rem;" value="' + JYB.escapeHtml(c.referral_payout_handle || '') + '">' +
+        '</div>' +
+        '</div>' +
+        '<div class="form-group mt-xs"><label class="form-label" style="font-size:.65rem;">Referral Code</label>' +
+          '<input type="text" id="rr-code-' + c.id + '" class="form-input" style="font-size:.85rem;" value="' + JYB.escapeHtml(c.referral_code || '') + '">' +
+        '</div>' +
+        '<button class="btn btn-outline btn-sm mt-xs" onclick="saveReferralConfig(\'' + c.id + '\')">Save Referral Config</button>';
+    }
+
+    return html;
   }
 
   function infoRow(label, value) {
@@ -620,28 +761,57 @@
     var phone        = document.getElementById('c-phone').value.trim();
     var company      = document.getElementById('c-company').value.trim();
     var account_type = document.getElementById('c-account-type').value;
+    var portalRolesVal = document.getElementById('c-portal-roles').value;
     var plan         = document.getElementById('c-plan').value.trim();
     var start_date   = document.getElementById('c-start-date').value;
     var notes        = document.getElementById('c-notes').value.trim();
 
-    if (!name || !email || !account_type) {
-      JYB.showMsg(msg, 'Name, email, and account type are required.', 'error');
+    // Referral fields
+    var refPct    = document.getElementById('c-ref-pct').value;
+    var refPayout = document.getElementById('c-ref-payout').value;
+    var refHandle = document.getElementById('c-ref-handle').value.trim();
+
+    if (!name || !email) {
+      JYB.showMsg(msg, 'Name and email are required.', 'error');
       return;
     }
+
+    var portal_roles = portalRolesVal ? portalRolesVal.split(',') : ['client'];
 
     btn.disabled = true;
     btn.textContent = 'Creating\u2026';
 
     try {
+      var payload = {
+        name, email,
+        phone: phone || null,
+        company: company || null,
+        account_type: account_type || null,
+        plan: plan || null,
+        start_date: start_date || null,
+        notes: notes || null,
+        portal_roles,
+      };
+      if (portal_roles.includes('referral')) {
+        payload.referral_pct = parseInt(refPct) || 15;
+        payload.referral_payout_method = refPayout || null;
+        payload.referral_payout_handle = refHandle || null;
+      }
       var data = await JYB.adminFetch('/api/admin/clients', {
         method: 'POST',
-        body: JSON.stringify({ name, email, phone: phone || null, company: company || null, account_type, plan: plan || null, start_date: start_date || null, notes: notes || null }),
+        body: JSON.stringify(payload),
       });
 
       if (data.success) {
         // Show token modal
         document.getElementById('modal-token').textContent = data.access_token;
         document.getElementById('modal-url').textContent   = data.login_url;
+        var refCodeEl = document.getElementById('modal-ref-code-wrap');
+        if (refCodeEl) {
+          refCodeEl.style.display = data.referral_code ? '' : 'none';
+          var rcDisplay = document.getElementById('modal-ref-code');
+          if (rcDisplay) rcDisplay.textContent = data.referral_code || '';
+        }
         document.getElementById('token-modal').classList.remove('hidden');
 
         // Reset form
@@ -917,6 +1087,266 @@
     btn.disabled = false;
     btn.textContent = 'Add Note';
   });
+
+  // ── Toggle referral fields in add-client form ────────────
+  window.toggleReferralFields = function () {
+    var val = document.getElementById('c-portal-roles').value;
+    var show = val.includes('referral');
+    document.getElementById('c-referral-fields').style.display = show ? '' : 'none';
+  };
+
+  // ── Toggle role on a client ──────────────────────────────
+  window.toggleRole = async function (clientId, role, currently_active) {
+    try {
+      var body = currently_active ? { remove: [role] } : { add: [role] };
+      var data = await JYB.adminFetch('/api/admin/clients/' + clientId + '/roles', {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+      });
+      if (data.success) {
+        JYB.showMsg(adminMsg, 'Roles updated.', 'success');
+        // Refresh this client card
+        var card = document.getElementById('client-card-' + clientId);
+        if (card) {
+          var detail = document.getElementById('detail-' + clientId);
+          if (detail && detail.classList.contains('open')) {
+            detail.classList.remove('open');
+          }
+        }
+        loadClients();
+      }
+    } catch (e) {
+      JYB.showMsg(adminMsg, e.message || 'Failed to update roles.', 'error');
+    }
+  };
+
+  // ── Save referral config ─────────────────────────────────
+  window.saveReferralConfig = async function (clientId) {
+    var pct    = document.getElementById('rr-pct-' + clientId);
+    var method = document.getElementById('rr-method-' + clientId);
+    var handle = document.getElementById('rr-handle-' + clientId);
+    var code   = document.getElementById('rr-code-' + clientId);
+    try {
+      await JYB.adminFetch('/api/admin/clients/' + clientId + '/referral', {
+        method: 'PUT',
+        body: JSON.stringify({
+          referral_pct:            pct    ? parseInt(pct.value) : undefined,
+          referral_payout_method:  method ? method.value : undefined,
+          referral_payout_handle:  handle ? handle.value.trim() : undefined,
+          referral_code:           code   ? code.value.trim() : undefined,
+        }),
+      });
+      JYB.showMsg(adminMsg, 'Referral config saved.', 'success');
+    } catch (e) {
+      JYB.showMsg(adminMsg, e.message || 'Failed to save.', 'error');
+    }
+  };
+
+  // ── Referral Partners ────────────────────────────────────
+  window.loadReferralPartners = async function () {
+    var loadEl = document.getElementById('rp-loading');
+    var listEl = document.getElementById('rp-list');
+    loadEl.style.display = ''; listEl.style.display = 'none'; listEl.innerHTML = '';
+    try {
+      var data = await JYB.adminFetch('/api/admin/clients');
+      var partners = (data.clients || []).filter(function (c) {
+        try { return JSON.parse(c.portal_roles || '[]').includes('referral'); } catch(e) { return false; }
+      });
+      loadEl.style.display = 'none'; listEl.style.display = '';
+      if (partners.length === 0) {
+        listEl.innerHTML = '<div class="empty-state"><p>No referral partners yet. Add portal_roles = ["referral"] or ["client","referral"] to a client.</p></div>';
+      } else {
+        listEl.innerHTML = partners.map(function (p) {
+          return '<div class="client-card">' +
+            '<div class="client-card-header">' +
+              '<div><div class="client-name">' + JYB.escapeHtml(p.name) + '</div>' +
+                '<div class="client-email">' + JYB.escapeHtml(p.email || '') + '</div></div>' +
+              '<div class="client-badges">' +
+                '<span class="badge badge-amber">' + (p.referral_pct || 15) + '% commission</span>' +
+                (p.referral_code ? '<span class="badge badge-silver">ref: ' + JYB.escapeHtml(p.referral_code) + '</span>' : '') +
+                JYB.statusBadge(p.status || 'active') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+    } catch (e) {
+      loadEl.style.display = 'none'; listEl.style.display = '';
+      JYB.showMsg(adminMsg, e.message || 'Failed to load partners.', 'error');
+    }
+  };
+
+  // ── Referral Submissions ─────────────────────────────────
+  window.loadSubmissions = async function () {
+    var loadEl  = document.getElementById('sub-loading');
+    var listEl  = document.getElementById('sub-list');
+    var status  = document.getElementById('sub-filter').value;
+    loadEl.style.display = ''; listEl.style.display = 'none'; listEl.innerHTML = '';
+    try {
+      var url = '/api/admin/referral-submissions' + (status ? '?status=' + status : '');
+      var data = await JYB.adminFetch(url);
+      loadEl.style.display = 'none'; listEl.style.display = '';
+      var subs = data.submissions || [];
+      if (subs.length === 0) {
+        listEl.innerHTML = '<div class="empty-state"><p>No submissions' + (status ? ' with status: ' + status : '') + '.</p></div>';
+      } else {
+        listEl.innerHTML = subs.map(function (s) {
+          return '<div class="client-card">' +
+            '<div class="client-card-header">' +
+              '<div>' +
+                '<div class="client-name">' + JYB.escapeHtml(s.referred_name) + (s.referred_business ? ' &mdash; ' + JYB.escapeHtml(s.referred_business) : '') + '</div>' +
+                '<div class="client-email">' + JYB.escapeHtml(s.referred_email || 'No email') + ' &middot; via ' + JYB.escapeHtml(s.referrer_name || 'unknown') + '</div>' +
+                (s.service_interest ? '<div class="client-email">' + JYB.escapeHtml(s.service_interest) + '</div>' : '') +
+              '</div>' +
+              '<div class="client-badges">' +
+                JYB.statusBadge(s.status) +
+                (s.commission_cents > 0 ? '<span class="badge badge-green">' + JYB.formatMoney(s.commission_cents) + ' commission</span>' : '') +
+              '</div>' +
+            '</div>' +
+            '<div style="padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border,rgba(255,255,255,.08));">' +
+              buildSubActions(s) +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+    } catch (e) {
+      loadEl.style.display = 'none'; listEl.style.display = '';
+      JYB.showMsg(adminMsg, e.message || 'Failed to load submissions.', 'error');
+    }
+  };
+
+  function buildSubActions(s) {
+    var btns = '';
+    if (s.status === 'pending') {
+      btns += '<button class="btn btn-ghost btn-sm" onclick="updateSub(\'' + s.id + '\',{status:\'contacted\'})">Mark Contacted</button>';
+      btns += '<button class="btn btn-ghost btn-sm" onclick="openSignedModal(\'' + s.id + '\')">Mark Signed &rarr;</button>';
+      btns += '<button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="updateSub(\'' + s.id + '\',{status:\'declined\'})">Decline</button>';
+    } else if (s.status === 'contacted') {
+      btns += '<button class="btn btn-outline btn-sm" onclick="openSignedModal(\'' + s.id + '\')">Mark Signed &rarr;</button>';
+      btns += '<button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="updateSub(\'' + s.id + '\',{status:\'declined\'})">Decline</button>';
+    } else if (s.status === 'signed' && s.commission_status !== 'paid') {
+      btns += '<span style="font-size:.78rem;color:var(--text-muted,#8A8F9E);">Signed &middot; Commission ' + JYB.escapeHtml(s.commission_status || 'owed') + '</span>';
+    }
+    return btns || '<span style="font-size:.78rem;color:var(--text-muted,#8A8F9E);">' + JYB.escapeHtml(s.status) + '</span>';
+  }
+
+  window.updateSub = async function (id, body) {
+    try {
+      await JYB.adminFetch('/api/admin/referral-submissions/' + id, { method: 'PATCH', body: JSON.stringify(body) });
+      JYB.showMsg(adminMsg, 'Submission updated.', 'success');
+      loadSubmissions();
+    } catch (e) { JYB.showMsg(adminMsg, e.message, 'error'); }
+  };
+
+  window.openSignedModal = function (subId) {
+    var existing = document.getElementById('signed-modal');
+    if (existing) existing.remove();
+    var div = document.createElement('div');
+    div.id = 'signed-modal';
+    div.className = 'modal-backdrop';
+    div.innerHTML =
+      '<div class="modal" role="dialog">' +
+        '<h2 class="modal-title">Mark as Signed</h2>' +
+        '<p class="modal-sub">Enter the contract value to auto-calculate the commission.</p>' +
+        '<div class="form-grid mb-sm">' +
+          '<div class="form-group">' +
+            '<label class="form-label">Contract Value ($)</label>' +
+            '<input type="number" id="sm-value" class="form-input" placeholder="2499.00" step="0.01" min="0">' +
+          '</div>' +
+          '<div class="form-group">' +
+            '<label class="form-label">Date Signed</label>' +
+            '<input type="date" id="sm-date" class="form-input" value="' + new Date().toISOString().slice(0,10) + '">' +
+          '</div>' +
+        '</div>' +
+        '<div id="sm-msg" class="msg mb-sm"></div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-ghost" onclick="document.getElementById(\'signed-modal\').remove()">Cancel</button>' +
+          '<button class="btn btn-primary" onclick="submitSigned(\'' + subId + '\')">Confirm Signed</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(div);
+    div.addEventListener('click', function (e) { if (e.target === div) div.remove(); });
+  };
+
+  window.submitSigned = async function (subId) {
+    var val  = document.getElementById('sm-value').value.trim();
+    var date = document.getElementById('sm-date').value;
+    var msg  = document.getElementById('sm-msg');
+    if (!val || !date) { JYB.showMsg(msg, 'Both fields required.', 'error'); return; }
+    try {
+      await JYB.adminFetch('/api/admin/referral-submissions/' + subId, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: 'signed',
+          contract_value_cents: Math.round(parseFloat(val) * 100),
+          date_signed: date,
+        }),
+      });
+      document.getElementById('signed-modal').remove();
+      JYB.showMsg(adminMsg, 'Marked as signed. Commission record created.', 'success');
+      loadSubmissions();
+    } catch (e) { JYB.showMsg(document.getElementById('sm-msg'), e.message, 'error'); }
+  };
+
+  // ── Commissions ──────────────────────────────────────────
+  window.loadCommissions = async function () {
+    var loadEl  = document.getElementById('comm-loading');
+    var listEl  = document.getElementById('comm-list');
+    var totEl   = document.getElementById('comm-totals');
+    var status  = document.getElementById('comm-filter').value;
+    loadEl.style.display = ''; listEl.style.display = 'none'; listEl.innerHTML = '';
+    try {
+      var url = '/api/admin/commissions' + (status ? '?status=' + status : '');
+      var data = await JYB.adminFetch(url);
+      loadEl.style.display = 'none'; listEl.style.display = '';
+      var comms = data.commissions || [];
+
+      var owed  = comms.filter(function (c) { return c.status === 'owed'; }).reduce(function (s,c) { return s+(c.amount_cents||0); }, 0);
+      var paid  = comms.filter(function (c) { return c.status === 'paid'; }).reduce(function (s,c) { return s+(c.amount_cents||0); }, 0);
+      totEl.innerHTML =
+        '<div class="stat-card"><div class="stat-label">Total Owed</div><div class="stat-value">' + JYB.formatMoney(owed) + '</div></div>' +
+        '<div class="stat-card"><div class="stat-label">Total Paid Out</div><div class="stat-value">' + JYB.formatMoney(paid) + '</div></div>';
+
+      if (comms.length === 0) {
+        listEl.innerHTML = '<div class="empty-state"><p>No commissions' + (status ? ' with status: ' + status : '') + '.</p></div>';
+      } else {
+        listEl.innerHTML = comms.map(function (c) {
+          return '<div class="client-card">' +
+            '<div class="client-card-header">' +
+              '<div>' +
+                '<div class="client-name">' + JYB.formatMoney(c.amount_cents) + ' &mdash; ' + JYB.escapeHtml(c.referrer_name || 'Unknown partner') + '</div>' +
+                '<div class="client-email">Due ' + JYB.formatDate(c.date_owed) +
+                  (c.date_paid ? ' &middot; Paid ' + JYB.formatDate(c.date_paid) : '') +
+                  (c.referral_payout_handle ? ' &middot; ' + JYB.escapeHtml(c.payout_method || '') + ': ' + JYB.escapeHtml(c.referral_payout_handle) : '') +
+                '</div>' +
+              '</div>' +
+              '<div class="client-badges">' +
+                JYB.statusBadge(c.status) +
+              '</div>' +
+            '</div>' +
+            (c.status === 'owed' ?
+              '<div style="padding:8px 16px;border-top:1px solid var(--border,rgba(255,255,255,.08));">' +
+              '<button class="btn btn-outline btn-sm" onclick="markCommissionPaid(\'' + c.id + '\')">Mark Paid</button>' +
+              '</div>' : '') +
+          '</div>';
+        }).join('');
+      }
+    } catch (e) {
+      loadEl.style.display = 'none'; listEl.style.display = '';
+      JYB.showMsg(adminMsg, e.message || 'Failed to load commissions.', 'error');
+    }
+  };
+
+  window.markCommissionPaid = async function (id) {
+    try {
+      await JYB.adminFetch('/api/admin/commissions/' + id, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'paid', date_paid: new Date().toISOString().slice(0,10) }),
+      });
+      JYB.showMsg(adminMsg, 'Commission marked as paid.', 'success');
+      loadCommissions();
+    } catch (e) { JYB.showMsg(adminMsg, e.message, 'error'); }
+  };
 
   // ── Close modals on backdrop click ──────────────────────
   ['token-modal','invoice-modal','project-modal','meeting-modal'].forEach(function (id) {
