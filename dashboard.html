@@ -616,35 +616,31 @@
   // Always-on top item
   buildNavItem('overview', '&#8862;', 'Overview', 'Resumen', false);
 
+  // ── My Work ───────────────────────────────────────────────
+  buildNavLabel('My Work', 'Mi Trabajo');
   if (isClient) {
-    buildNavLabel('Your Project', 'Tu Proyecto');
-    buildNavItem('meetings',    '&#9312;', 'Meetings',  'Reuni&oacute;n',   false);
-    buildNavItem('invoices',    '&#9313;', 'Invoice',   'Factura',   true);
-    buildNavItem('projects',    '&#9314;', 'Projects',  'Proyectos', true);
-    buildNavItem('files',       '&#9315;', 'Files',     'Archivos',  true);
+    buildNavItem('meetings',  '&#9312;', 'Meetings',  'Reuni&oacute;n', false);
+    buildNavItem('invoices',  '&#9313;', 'Invoice',   'Factura',        true);
+    buildNavItem('projects',  '&#9314;', 'Projects',  'Proyectos',      true);
+    buildNavItem('files',     '&#9315;', 'Files',     'Archivos',       true);
   }
-
-  buildNavLabel('Connect', 'Comunicaci&oacute;n');
   buildNavItem('messages', '&#9993;', 'Messages', 'Mensajes', false);
 
-  buildNavLabel('Account', 'Cuenta');
+  // ── My Account ────────────────────────────────────────────
+  buildNavLabel('My Account', 'Mi Cuenta');
   if (isClient) {
-    buildNavItem('perks',       '&#9733;', 'Perks',            'Beneficios',    false);
-    buildNavItem('programs',    '&#9672;', 'Referral Partner', 'Socio Referido', false);
-    buildNavItem('newsletter',  '&#9993;', 'Newsletter',       'Bolet&iacute;n', false);
+    buildNavItem('perks',      '&#9733;', 'Perks',            'Beneficios',     false);
+    buildNavItem('programs',   '&#9672;', 'Referral Partner', 'Socio Referido', false);
+    buildNavItem('newsletter', '&#9993;', 'Newsletter',       'Bolet&iacute;n', false);
   }
-
   if (isReferral) {
-    buildNavLabel('Referrals', 'Referidos');
     buildNavItem('referrals',   '&#9678;', 'My Referrals', 'Mis Referidos', false);
-    buildNavItem('commissions', '$', 'Commissions',  'Comisiones',    false);
+    buildNavItem('commissions', '$',       'Commissions',  'Comisiones',    false);
   }
   if (isStudent) {
-    buildNavLabel('Learning', 'Aprendizaje');
     buildNavItem('classes', '&#9689;', 'My Classes', 'Mis Clases', false);
   }
   if (isStore) {
-    buildNavLabel('Store', 'Tienda');
     buildNavItem('store', '&#9749;', 'My Orders', 'Mis Pedidos', false);
   }
 
