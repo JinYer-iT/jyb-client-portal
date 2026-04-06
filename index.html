@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JYB Client Portal</title>
+  <meta name="robots" content="noindex, nofollow">
+  <script>
+    // Redirect based on stored auth state
+    (function () {
+      var client = sessionStorage.getItem('jyb_client');
+      var admin  = sessionStorage.getItem('jyb_admin_token');
+      // Also check for token in URL (direct client link)
+      var params = new URLSearchParams(window.location.search);
+      var urlToken = params.get('token');
+
+      if (urlToken) {
+        window.location.replace('/login.html?token=' + encodeURIComponent(urlToken));
+      } else if (admin) {
+        window.location.replace('/admin.html');
+      } else if (client) {
+        window.location.replace('/dashboard.html');
+      } else {
+        window.location.replace('/login.html');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- Redirect happens immediately via JS above -->
+</body>
+</html>

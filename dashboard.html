@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Portal &mdash; JYB</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/assets/css/portal.css">
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="portal-nav">
+  <a href="/dashboard.html" class="nav-brand">
+    <span class="nav-logo-text">JYB</span>
+  </a>
+  <div class="nav-spacer"></div>
+  <span class="nav-label" id="nav-client-label">Loading&hellip;</span>
+  <button class="btn btn-ghost btn-sm" onclick="JYB.signOut()">Sign Out</button>
+</nav>
+
+<!-- Tab Bar -->
+<div class="tab-bar" id="tab-bar" role="tablist">
+  <button class="tab-btn" role="tab" data-tab="overview">Overview</button>
+  <button class="tab-btn" role="tab" data-tab="projects">Projects</button>
+  <button class="tab-btn" role="tab" data-tab="invoices">Invoices</button>
+  <button class="tab-btn" role="tab" data-tab="meetings">Meetings</button>
+  <button class="tab-btn" role="tab" data-tab="files">Files</button>
+</div>
+
+<!-- Loading state -->
+<div id="global-spinner" class="spinner-wrap">
+  <div class="spinner"></div>
+</div>
+
+<!-- Error state -->
+<div id="global-error" class="tab-content" style="display:none; max-width:600px; padding:40px 24px;">
+  <div class="msg msg-error visible" id="global-error-msg"></div>
+  <button class="btn btn-outline btn-sm mt-sm" onclick="window.location.reload()">Retry</button>
+</div>
+
+<!-- Tab Content -->
+<div id="tab-contents" style="display:none;">
+
+  <!-- Tab 1: Overview -->
+  <section class="tab-content" id="tab-overview" role="tabpanel">
+
+    <!-- Stat cards -->
+    <div class="card-grid mb-md" id="stat-cards"></div>
+
+    <!-- Current Projects -->
+    <div class="divider"></div>
+    <div class="section-header mt-md">
+      <span class="section-title">Current Projects</span>
+    </div>
+    <div id="overview-projects" class="project-list mb-md"></div>
+
+    <!-- Recent Invoice -->
+    <div class="divider"></div>
+    <div class="section-header mt-md">
+      <span class="section-title">Recent Invoice</span>
+    </div>
+    <div id="overview-invoice"></div>
+
+  </section>
+
+  <!-- Tab 2: Projects -->
+  <section class="tab-content" id="tab-projects" role="tabpanel">
+    <div class="section-header">
+      <span class="section-title">All Projects</span>
+    </div>
+    <div id="projects-list" class="project-list"></div>
+  </section>
+
+  <!-- Tab 3: Invoices -->
+  <section class="tab-content" id="tab-invoices" role="tabpanel">
+    <div class="section-header">
+      <span class="section-title">Invoices</span>
+    </div>
+    <div class="invoice-table-wrap">
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Invoice #</th>
+            <th>Issued</th>
+            <th>Due</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="invoices-tbody"></tbody>
+      </table>
+    </div>
+    <div id="invoice-totals" class="invoice-totals mt-md"></div>
+  </section>
+
+  <!-- Tab 4: Meetings -->
+  <section class="tab-content" id="tab-meetings" role="tabpanel">
+    <div class="section-header">
+      <span class="section-title">Meeting Notes</span>
+    </div>
+    <div id="meetings-list" class="meeting-list"></div>
+  </section>
+
+  <!-- Tab 5: Files -->
+  <section class="tab-content" id="tab-files" role="tabpanel">
+    <div class="section-header">
+      <span class="section-title">Deliverables &amp; Files</span>
+    </div>
+    <div id="files-grid" class="files-grid"></div>
+  </section>
+
+</div>
+
+<script src="/assets/js/portal.js"></script>
+<script>
+(function () {
+
+  // ── Auth guard ──────────────────────────────────────────
+  var client = JYB.getClient();
+  if (!client) {
+    window.location.replace('/login.html');
+    return;
+  }
+
+  // ── DOM refs ────────────────────────────────────────────
+  var navLabel       = document.getElementById('nav-client-label');
+  var spinner        = document.getElementById('global-spinner');
+  var errorBox       = document.getElementById('global-error');
+  var errorMsg       = document.getElementById('global-error-msg');
+  var tabContents    = document.getElementById('tab-contents');
+  var tabBar         = document.getElementById('tab-bar');
+
+  navLabel.textContent = client.name || client.email || 'Client';
+
+  // ── Tab management ──────────────────────────────────────
+  var tabBtns     = tabBar.querySelectorAll('.tab-btn');
+  var tabPanels   = document.querySelectorAll('.tab-content');
+  var activeTab   = 'overview';
+
+  tabBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var tab = btn.dataset.tab;
+      activateTab(tab);
+    });
+  });
+
+  function activateTab(tab) {
+    activeTab = tab;
+    tabBtns.forEach(function (b) {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    tabPanels.forEach(function (p) {
+      p.classList.toggle('active', p.id === 'tab-' + tab);
+    });
+  }
+
+  activateTab('overview');
+
+  // ── Fetch dashboard data ────────────────────────────────
+  async function loadDashboard() {
+    try {
+      var data = await JYB.clientFetch('/api/client/' + client.id + '/dashboard');
+
+      spinner.style.display = 'none';
+      tabContents.style.display = '';
+
+      renderOverview(data);
+      renderProjects(data.projects || []);
+      renderInvoices(data.invoices || []);
+      renderMeetings(data.meetings || []);
+      renderFiles(data.deliverables || []);
+
+    } catch (err) {
+      spinner.style.display = 'none';
+      errorBox.style.display = 'block';
+      JYB.showMsg(errorMsg, err.message || 'Failed to load your portal. Please try again.', 'error');
+    }
+  }
+
+  // ── Overview ────────────────────────────────────────────
+  function renderOverview(data) {
+    var projects     = data.projects     || [];
+    var invoices     = data.invoices     || [];
+    var meetings     = data.meetings     || [];
+
+    var activeProjects = projects.filter(function (p) { return p.status !== 'completed' && p.status !== 'cancelled'; });
+    var unpaidInvoices = invoices.filter(function (i) { return i.status !== 'paid' && i.status !== 'cancelled'; });
+    var unpaidTotal    = unpaidInvoices.reduce(function (sum, i) { return sum + (i.amount_cents || 0); }, 0);
+
+    // Pending action items from latest meeting
+    var latestMeeting   = meetings[0] || null;
+    var actionCount     = 0;
+    if (latestMeeting && latestMeeting.action_items) {
+      try {
+        var items = typeof latestMeeting.action_items === 'string'
+          ? JSON.parse(latestMeeting.action_items)
+          : latestMeeting.action_items;
+        actionCount = Array.isArray(items) ? items.length : 0;
+      } catch (e) { actionCount = 0; }
+    }
+
+    document.getElementById('stat-cards').innerHTML =
+      statCard('Active Projects',  activeProjects.length, null) +
+      statCard('Unpaid Invoices',  unpaidInvoices.length, unpaidTotal > 0 ? JYB.formatMoney(unpaidTotal) + ' outstanding' : null, unpaidInvoices.length > 0 ? 'amber' : null) +
+      statCard('Action Items',     actionCount,            actionCount > 0 ? 'From last meeting' : 'All clear', actionCount > 0 ? 'amber' : 'green');
+
+    // Current projects (active only, max 3)
+    var overviewProjects = document.getElementById('overview-projects');
+    if (activeProjects.length === 0) {
+      overviewProjects.innerHTML = '<div class="empty-state"><p>No active projects right now.</p></div>';
+    } else {
+      overviewProjects.innerHTML = activeProjects.slice(0, 3).map(projectCard).join('');
+    }
+
+    // Recent invoice
+    var invEl = document.getElementById('overview-invoice');
+    if (invoices.length === 0) {
+      invEl.innerHTML = '<div class="empty-state"><p>No invoices yet.</p></div>';
+    } else {
+      var inv = invoices[0];
+      invEl.innerHTML = '<div class="card flex-center gap-sm" style="flex-wrap:wrap;justify-content:space-between;">' +
+        '<div>' +
+          '<div class="font-head" style="font-weight:600;font-size:1rem;">' + JYB.escapeHtml(inv.invoice_number) + '</div>' +
+          '<div class="text-muted" style="font-size:13px;">Due ' + JYB.formatDate(inv.due_date) + '</div>' +
+        '</div>' +
+        '<div class="flex-center gap-sm">' +
+          '<span style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;">' + JYB.formatMoney(inv.amount_cents) + '</span>' +
+          JYB.statusBadge(inv.status) +
+        '</div>' +
+      '</div>';
+    }
+  }
+
+  function statCard(label, value, sub, color) {
+    var subHtml = sub ? '<div class="stat-sub text-' + (color || 'muted') + '">' + JYB.escapeHtml(String(sub)) + '</div>' : '';
+    return '<div class="stat-card">' +
+      '<div class="stat-label">' + JYB.escapeHtml(label) + '</div>' +
+      '<div class="stat-value">' + JYB.escapeHtml(String(value)) + '</div>' +
+      subHtml +
+    '</div>';
+  }
+
+  // ── Projects ─────────────────────────────────────────────
+  function projectCard(p) {
+    var deliverables = '';
+    if (p.deliverables) {
+      try {
+        var items = typeof p.deliverables === 'string'
+          ? JSON.parse(p.deliverables)
+          : p.deliverables;
+        if (Array.isArray(items) && items.length > 0) {
+          deliverables = '<ul class="project-deliverables">' +
+            items.map(function (d) { return '<li>' + JYB.escapeHtml(d) + '</li>'; }).join('') +
+          '</ul>';
+        }
+      } catch (e) {}
+    }
+
+    return '<div class="project-card">' +
+      '<div class="project-header">' +
+        '<span class="project-title">' + JYB.escapeHtml(p.title) + '</span>' +
+        JYB.statusBadge(p.status) +
+      '</div>' +
+      '<div class="project-meta">' +
+        JYB.typeBadge(p.type) +
+        '<span class="project-dates">' + JYB.formatDateRange(p.start_date, p.due_date) + '</span>' +
+      '</div>' +
+      deliverables +
+    '</div>';
+  }
+
+  function renderProjects(projects) {
+    var el = document.getElementById('projects-list');
+    if (projects.length === 0) {
+      el.innerHTML = '<div class="empty-state"><p>No projects yet.</p></div>';
+      return;
+    }
+    el.innerHTML = projects.map(projectCard).join('');
+  }
+
+  // ── Invoices ─────────────────────────────────────────────
+  function renderInvoices(invoices) {
+    var tbody = document.getElementById('invoices-tbody');
+    var totalsEl = document.getElementById('invoice-totals');
+
+    if (invoices.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>No invoices yet.</p></div></td></tr>';
+      totalsEl.innerHTML = '';
+      return;
+    }
+
+    tbody.innerHTML = invoices.map(function (inv, idx) {
+      var lineItemsHtml = '';
+      if (inv.line_items) {
+        try {
+          var items = typeof inv.line_items === 'string'
+            ? JSON.parse(inv.line_items)
+            : inv.line_items;
+          if (Array.isArray(items) && items.length > 0) {
+            lineItemsHtml = '<tr class="invoice-expand-row" id="expand-' + idx + '" style="display:none;">' +
+              '<td colspan="5">' +
+                '<div class="invoice-line-items">' +
+                  '<h4>Line Items</h4>' +
+                  items.map(function (li) {
+                    return '<div class="line-item-row">' +
+                      '<span>' + JYB.escapeHtml(li.description || '') + '</span>' +
+                      '<span>' + JYB.formatMoney(li.amount_cents || (li.amount ? li.amount * 100 : 0)) + '</span>' +
+                    '</div>';
+                  }).join('') +
+                '</div>' +
+              '</td>' +
+            '</tr>';
+          }
+        } catch (e) {}
+      }
+
+      return '<tr onclick="toggleInvoice(' + idx + ', this)" id="inv-row-' + idx + '">' +
+        '<td class="font-head" style="font-weight:600;">' + JYB.escapeHtml(inv.invoice_number) + '</td>' +
+        '<td>' + JYB.formatDate(inv.issued_date) + '</td>' +
+        '<td>' + JYB.formatDate(inv.due_date) + '</td>' +
+        '<td class="font-head" style="font-weight:600;">' + JYB.formatMoney(inv.amount_cents) + '</td>' +
+        '<td>' + JYB.statusBadge(inv.status) + '</td>' +
+      '</tr>' + lineItemsHtml;
+    }).join('');
+
+    // Totals
+    var totalPaid = invoices
+      .filter(function (i) { return i.status === 'paid'; })
+      .reduce(function (s, i) { return s + (i.amount_cents || 0); }, 0);
+    var totalUnpaid = invoices
+      .filter(function (i) { return i.status !== 'paid' && i.status !== 'cancelled'; })
+      .reduce(function (s, i) { return s + (i.amount_cents || 0); }, 0);
+
+    totalsEl.innerHTML =
+      '<div class="invoice-total-item">' +
+        '<span class="invoice-total-label">Total Paid</span>' +
+        '<span class="invoice-total-value paid">' + JYB.formatMoney(totalPaid) + '</span>' +
+      '</div>' +
+      '<div class="invoice-total-item">' +
+        '<span class="invoice-total-label">Total Outstanding</span>' +
+        '<span class="invoice-total-value unpaid">' + JYB.formatMoney(totalUnpaid) + '</span>' +
+      '</div>';
+  }
+
+  window.toggleInvoice = function (idx, row) {
+    var expandRow = document.getElementById('expand-' + idx);
+    if (!expandRow) return;
+    var isOpen = expandRow.style.display !== 'none';
+    expandRow.style.display = isOpen ? 'none' : 'table-row';
+    row.classList.toggle('expanded', !isOpen);
+  };
+
+  // ── Meetings ─────────────────────────────────────────────
+  function renderMeetings(meetings) {
+    var el = document.getElementById('meetings-list');
+    if (meetings.length === 0) {
+      el.innerHTML = '<div class="empty-state"><p>No meeting notes yet.</p></div>';
+      return;
+    }
+
+    el.innerHTML = meetings.map(function (m) {
+      var actionItems = '';
+      if (m.action_items) {
+        try {
+          var items = typeof m.action_items === 'string'
+            ? JSON.parse(m.action_items)
+            : m.action_items;
+          if (Array.isArray(items) && items.length > 0) {
+            actionItems =
+              '<div class="action-items-label">Action Items</div>' +
+              '<ul class="action-items-list">' +
+              items.map(function (a) {
+                var text = typeof a === 'string' ? a : (a.text || a.item || JSON.stringify(a));
+                return '<li class="action-item">' + JYB.escapeHtml(text) + '</li>';
+              }).join('') +
+              '</ul>';
+          }
+        } catch (e) {}
+      }
+
+      return '<div class="meeting-card">' +
+        '<div class="meeting-date">' + JYB.formatDate(m.meeting_date) + '</div>' +
+        '<div class="meeting-summary">' + JYB.escapeHtml(m.summary) + '</div>' +
+        actionItems +
+      '</div>';
+    }).join('');
+  }
+
+  // ── Files ────────────────────────────────────────────────
+  function renderFiles(deliverables) {
+    var el = document.getElementById('files-grid');
+    if (deliverables.length === 0) {
+      el.innerHTML = '<div class="empty-state"><p>No files yet. Deliverables will appear here when ready.</p></div>';
+      return;
+    }
+
+    el.innerHTML = deliverables.map(function (d) {
+      var downloadBtn = '';
+      if (d.file_url) {
+        downloadBtn = '<a href="' + JYB.escapeHtml(d.file_url) + '" target="_blank" rel="noopener" class="btn btn-outline btn-sm">Download</a>';
+      }
+
+      return '<div class="file-card">' +
+        '<div class="file-title">' + JYB.escapeHtml(d.title) + '</div>' +
+        '<div class="file-desc">' + JYB.escapeHtml(d.description || '') + '</div>' +
+        '<div class="file-meta">' +
+          JYB.statusBadge(d.status || 'pending') +
+          '<span class="file-due">' + (d.due_date ? 'Due ' + JYB.formatDate(d.due_date) : '') + '</span>' +
+        '</div>' +
+        (downloadBtn ? '<div class="mt-xs">' + downloadBtn + '</div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  // ── Boot ─────────────────────────────────────────────────
+  loadDashboard();
+
+})();
+</script>
+
+</body>
+</html>

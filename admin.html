@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin &mdash; JYB Portal</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/assets/css/portal.css">
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="portal-nav">
+  <a href="/admin.html" class="nav-brand">
+    <span class="nav-logo-text">JYB Admin</span>
+  </a>
+  <span class="nav-badge">Portal Admin</span>
+  <div class="nav-spacer"></div>
+  <button class="btn btn-ghost btn-sm" onclick="JYB.signOut()">Sign Out</button>
+</nav>
+
+<!-- Admin Layout -->
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-section-label">Clients</div>
+    <button class="sidebar-btn active" id="nav-clients" onclick="showSection('clients')">All Clients</button>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Add New</div>
+    <button class="sidebar-btn" id="nav-add-client" onclick="showSection('add-client')">+ Add Client</button>
+  </aside>
+
+  <!-- Main content -->
+  <main class="admin-main">
+
+    <!-- Global messages -->
+    <div id="admin-msg" class="msg mb-md" role="alert" aria-live="polite"></div>
+
+    <!-- ── Section: All Clients ─────────────────────────── -->
+    <section id="section-clients">
+
+      <div class="section-header mb-md">
+        <h2 style="font-family:var(--font-head);font-size:1.25rem;">All Clients</h2>
+        <button class="btn btn-outline btn-sm" onclick="loadClients()">Refresh</button>
+      </div>
+
+      <div id="clients-loading" class="spinner-wrap"><div class="spinner"></div></div>
+      <div id="clients-list" class="client-list" style="display:none;"></div>
+
+    </section>
+
+    <!-- ── Section: Add Client ──────────────────────────── -->
+    <section id="section-add-client" style="display:none;">
+
+      <div class="section-header mb-md">
+        <h2 style="font-family:var(--font-head);font-size:1.25rem;">Add New Client</h2>
+      </div>
+
+      <div class="card">
+        <form id="add-client-form" novalidate>
+
+          <div class="form-grid mb-sm">
+            <div class="form-group">
+              <label class="form-label" for="c-name">Name <span style="color:var(--red)">*</span></label>
+              <input id="c-name" type="text" class="form-input" placeholder="Jane Doe" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="c-email">Email <span style="color:var(--red)">*</span></label>
+              <input id="c-email" type="email" class="form-input" placeholder="jane@example.com" required>
+            </div>
+          </div>
+
+          <div class="form-grid mb-sm">
+            <div class="form-group">
+              <label class="form-label" for="c-phone">Phone</label>
+              <input id="c-phone" type="tel" class="form-input" placeholder="+1 555 000 0000">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="c-company">Company</label>
+              <input id="c-company" type="text" class="form-input" placeholder="Acme Inc.">
+            </div>
+          </div>
+
+          <div class="form-grid mb-sm">
+            <div class="form-group">
+              <label class="form-label" for="c-account-type">Account Type <span style="color:var(--red)">*</span></label>
+              <select id="c-account-type" class="form-select" required>
+                <option value="">Select type&hellip;</option>
+                <option value="one-time">One-Time Project</option>
+                <option value="retainer">Ongoing Retainer</option>
+                <option value="care-plan">Hosting / Care Plan</option>
+                <option value="handover">Project Handover</option>
+                <option value="store">Store Customer</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="c-plan">Plan</label>
+              <input id="c-plan" type="text" class="form-input" placeholder="e.g. Standard Care $299/mo">
+            </div>
+          </div>
+
+          <div class="form-grid mb-sm">
+            <div class="form-group">
+              <label class="form-label" for="c-start-date">Start Date</label>
+              <input id="c-start-date" type="date" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-group mb-md">
+            <label class="form-label" for="c-notes">Notes</label>
+            <textarea id="c-notes" class="form-textarea" placeholder="Any internal notes about this client&hellip;"></textarea>
+          </div>
+
+          <div id="add-client-msg" class="msg mb-sm"></div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" onclick="showSection('clients')">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="add-client-btn">Create Client</button>
+          </div>
+
+        </form>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- ── Token Modal ──────────────────────────────────────── -->
+<div class="modal-backdrop hidden" id="token-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <h2 class="modal-title" id="modal-title">Client Created</h2>
+    <p class="modal-sub">Copy and send this login link to your client. The token is shown once.</p>
+
+    <div class="form-group mb-xs">
+      <label class="form-label">Access Token</label>
+      <div class="token-display" id="modal-token"></div>
+      <button class="btn btn-ghost btn-sm mt-xs" id="copy-token-btn" onclick="JYB.copyText(document.getElementById('modal-token').textContent, this)">Copy Token</button>
+    </div>
+
+    <div class="form-group mb-md">
+      <label class="form-label">Login URL</label>
+      <div class="url-display" id="modal-url"></div>
+      <button class="btn btn-ghost btn-sm mt-xs" id="copy-url-btn" onclick="JYB.copyText(document.getElementById('modal-url').textContent, this)">Copy Login URL</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="closeTokenModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Add Invoice Modal ────────────────────────────────── -->
+<div class="modal-backdrop hidden" id="invoice-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="inv-modal-title">
+    <h2 class="modal-title" id="inv-modal-title">Add Invoice</h2>
+    <form id="add-invoice-form" novalidate>
+
+      <div class="form-grid mb-sm">
+        <div class="form-group">
+          <label class="form-label" for="inv-number">Invoice # <span style="color:var(--red)">*</span></label>
+          <input id="inv-number" type="text" class="form-input" placeholder="JYB-001" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inv-amount">Amount ($) <span style="color:var(--red)">*</span></label>
+          <input id="inv-amount" type="number" class="form-input" placeholder="500.00" step="0.01" min="0" required>
+        </div>
+      </div>
+
+      <div class="form-grid mb-sm">
+        <div class="form-group">
+          <label class="form-label" for="inv-issued">Issued Date <span style="color:var(--red)">*</span></label>
+          <input id="inv-issued" type="date" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inv-due">Due Date <span style="color:var(--red)">*</span></label>
+          <input id="inv-due" type="date" class="form-input" required>
+        </div>
+      </div>
+
+      <div class="form-group mb-sm">
+        <label class="form-label">Line Items (optional)</label>
+        <div id="inv-line-items" class="dynamic-rows"></div>
+        <button type="button" class="btn btn-ghost btn-sm mt-xs" onclick="addLineItem()">+ Add line item</button>
+      </div>
+
+      <div class="form-group mb-md">
+        <label class="form-label" for="inv-notes">Notes</label>
+        <textarea id="inv-notes" class="form-textarea" style="min-height:70px;" placeholder="Optional notes&hellip;"></textarea>
+      </div>
+
+      <div id="add-invoice-msg" class="msg mb-sm"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeInvoiceModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="add-invoice-btn">Add Invoice</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ── Add Project Modal ─────────────────────────────────── -->
+<div class="modal-backdrop hidden" id="project-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="proj-modal-title">
+    <h2 class="modal-title" id="proj-modal-title">Add Project</h2>
+    <form id="add-project-form" novalidate>
+
+      <div class="form-group mb-sm">
+        <label class="form-label" for="proj-title">Title <span style="color:var(--red)">*</span></label>
+        <input id="proj-title" type="text" class="form-input" placeholder="Brand Identity Redesign" required>
+      </div>
+
+      <div class="form-grid mb-sm">
+        <div class="form-group">
+          <label class="form-label" for="proj-type">Type <span style="color:var(--red)">*</span></label>
+          <select id="proj-type" class="form-select" required>
+            <option value="">Select type&hellip;</option>
+            <option value="branding">Branding</option>
+            <option value="web">Web</option>
+            <option value="video">Video</option>
+            <option value="social">Social</option>
+            <option value="care-plan">Care Plan</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="proj-status">Status</label>
+          <select id="proj-status" class="form-select">
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+            <option value="on_hold">On Hold</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid mb-sm">
+        <div class="form-group">
+          <label class="form-label" for="proj-start">Start Date</label>
+          <input id="proj-start" type="date" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="proj-due">Due Date</label>
+          <input id="proj-due" type="date" class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group mb-sm">
+        <label class="form-label" for="proj-desc">Description</label>
+        <textarea id="proj-desc" class="form-textarea" style="min-height:70px;" placeholder="Brief description&hellip;"></textarea>
+      </div>
+
+      <div class="form-group mb-md">
+        <label class="form-label">Deliverables (one per line)</label>
+        <textarea id="proj-deliverables" class="form-textarea" style="min-height:80px;" placeholder="Logo files&#10;Brand guide PDF&#10;Social media kit"></textarea>
+        <span class="form-note">Each line becomes a bullet point for the client.</span>
+      </div>
+
+      <div id="add-project-msg" class="msg mb-sm"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeProjectModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="add-project-btn">Add Project</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ── Add Meeting Modal ─────────────────────────────────── -->
+<div class="modal-backdrop hidden" id="meeting-modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtg-modal-title">
+    <h2 class="modal-title" id="mtg-modal-title">Add Meeting Note</h2>
+    <form id="add-meeting-form" novalidate>
+
+      <div class="form-group mb-sm">
+        <label class="form-label" for="mtg-date">Meeting Date <span style="color:var(--red)">*</span></label>
+        <input id="mtg-date" type="date" class="form-input" required>
+      </div>
+
+      <div class="form-group mb-sm">
+        <label class="form-label" for="mtg-summary">Summary <span style="color:var(--red)">*</span></label>
+        <textarea id="mtg-summary" class="form-textarea" placeholder="What was discussed&hellip;" required></textarea>
+      </div>
+
+      <div class="form-group mb-sm">
+        <label class="form-label">Action Items</label>
+        <div id="mtg-action-items" class="dynamic-rows"></div>
+        <button type="button" class="btn btn-ghost btn-sm mt-xs" onclick="addActionItem()">+ Add action item</button>
+      </div>
+
+      <div class="form-group mb-sm">
+        <div class="internal-label">Internal Only &mdash; client will not see this</div>
+        <label class="form-label" for="mtg-internal">Internal Notes</label>
+        <textarea id="mtg-internal" class="form-textarea" placeholder="Notes for internal use only&hellip;"></textarea>
+      </div>
+
+      <div class="form-group mb-md">
+        <label class="form-label">Visible to Client</label>
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" id="mtg-visible" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">Yes &mdash; client can see this meeting note</span>
+        </div>
+      </div>
+
+      <div id="add-meeting-msg" class="msg mb-sm"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeMeetingModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="add-meeting-btn">Add Note</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script src="/assets/js/portal.js"></script>
+<script>
+(function () {
+
+  // ── Auth guard ──────────────────────────────────────────
+  if (!JYB.getAdminToken()) {
+    window.location.replace('/login.html?mode=admin');
+    return;
+  }
+
+  // ── State ───────────────────────────────────────────────
+  var adminMsg      = document.getElementById('admin-msg');
+  var currentClient = null; // currently selected client for modals
+
+  // ── Section switching ───────────────────────────────────
+  window.showSection = function (name) {
+    document.querySelectorAll('.admin-main > section').forEach(function (s) {
+      s.style.display = 'none';
+    });
+    var el = document.getElementById('section-' + name);
+    if (el) el.style.display = '';
+
+    document.querySelectorAll('.sidebar-btn').forEach(function (b) {
+      b.classList.remove('active');
+    });
+    var navBtn = document.getElementById('nav-' + name);
+    if (navBtn) navBtn.classList.add('active');
+
+    JYB.hideMsg(adminMsg);
+  };
+
+  // ── Load Clients ────────────────────────────────────────
+  window.loadClients = async function () {
+    var loadingEl = document.getElementById('clients-loading');
+    var listEl    = document.getElementById('clients-list');
+    loadingEl.style.display = '';
+    listEl.style.display    = 'none';
+    listEl.innerHTML        = '';
+    JYB.hideMsg(adminMsg);
+
+    try {
+      var data = await JYB.adminFetch('/api/admin/clients');
+      loadingEl.style.display = 'none';
+      listEl.style.display    = '';
+
+      if (!data.clients || data.clients.length === 0) {
+        listEl.innerHTML = '<div class="empty-state"><p>No clients yet. Add your first client using the sidebar.</p></div>';
+        return;
+      }
+
+      listEl.innerHTML = data.clients.map(function (c) {
+        return buildClientCard(c);
+      }).join('');
+
+    } catch (err) {
+      loadingEl.style.display = 'none';
+      listEl.style.display    = '';
+      JYB.showMsg(adminMsg, err.message || 'Failed to load clients.', 'error');
+    }
+  };
+
+  // ── Client Card ──────────────────────────────────────────
+  function buildClientCard(c) {
+    return '<div class="client-card" id="client-card-' + c.id + '">' +
+      '<div class="client-card-header" onclick="toggleClientDetail(\'' + c.id + '\')">' +
+        '<div>' +
+          '<div class="client-name">' + JYB.escapeHtml(c.name) + '</div>' +
+          '<div class="client-email">' + JYB.escapeHtml(c.email || '') + '</div>' +
+          (c.company ? '<div class="client-company">' + JYB.escapeHtml(c.company) + '</div>' : '') +
+        '</div>' +
+        '<div class="client-badges">' +
+          JYB.typeBadge(c.account_type) +
+          (c.plan ? '<span class="badge badge-silver" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;">' + JYB.escapeHtml(c.plan) + '</span>' : '') +
+          JYB.statusBadge(c.status || 'active') +
+        '</div>' +
+      '</div>' +
+      '<div class="client-detail" id="detail-' + c.id + '">' +
+        buildClientDetail(c) +
+      '</div>' +
+    '</div>';
+  }
+
+  function buildClientDetail(c) {
+    return '<div class="client-detail-tabs">' +
+        '<button class="client-tab-btn active" onclick="switchClientTab(\'' + c.id + '\', \'info\', this)">Info</button>' +
+        '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'projects\', this)">Projects</button>' +
+        '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'invoices\', this)">Invoices</button>' +
+        '<button class="client-tab-btn" onclick="switchClientTab(\'' + c.id + '\', \'meetings\', this)">Meetings</button>' +
+      '</div>' +
+
+      '<div class="client-tab-content active" id="ctab-' + c.id + '-info">' +
+        '<div class="form-row" style="max-width:400px;">' +
+          infoRow('Start Date',    JYB.formatDate(c.start_date)) +
+          infoRow('Account Type',  c.account_type) +
+          infoRow('Plan',          c.plan) +
+          infoRow('Notes',         c.notes) +
+        '</div>' +
+      '</div>' +
+
+      '<div class="client-tab-content" id="ctab-' + c.id + '-projects">' +
+        '<div id="cprojects-' + c.id + '" class="project-list mb-sm">' + JYB.spinner() + '</div>' +
+        '<button class="btn btn-outline btn-sm" onclick="openProjectModal(\'' + c.id + '\')">+ Add Project</button>' +
+      '</div>' +
+
+      '<div class="client-tab-content" id="ctab-' + c.id + '-invoices">' +
+        '<div id="cinvoices-' + c.id + '" class="mb-sm">' + JYB.spinner() + '</div>' +
+        '<button class="btn btn-outline btn-sm" onclick="openInvoiceModal(\'' + c.id + '\')">+ Add Invoice</button>' +
+      '</div>' +
+
+      '<div class="client-tab-content" id="ctab-' + c.id + '-meetings">' +
+        '<div id="cmeetings-' + c.id + '" class="meeting-list mb-sm">' + JYB.spinner() + '</div>' +
+        '<button class="btn btn-outline btn-sm" onclick="openMeetingModal(\'' + c.id + '\')">+ Add Meeting Note</button>' +
+      '</div>';
+  }
+
+  function infoRow(label, value) {
+    if (!value) return '';
+    return '<div class="flex-center gap-sm mb-xs" style="font-size:13px;">' +
+      '<span class="text-muted" style="min-width:100px;">' + JYB.escapeHtml(label) + '</span>' +
+      '<span class="text-white">' + JYB.escapeHtml(String(value)) + '</span>' +
+    '</div>';
+  }
+
+  // ── Toggle client detail ─────────────────────────────────
+  window.toggleClientDetail = function (clientId) {
+    var detail = document.getElementById('detail-' + clientId);
+    if (!detail) return;
+    var isOpen = detail.classList.contains('open');
+    detail.classList.toggle('open', !isOpen);
+    if (!isOpen) {
+      // Load sub-data when opening for the first time
+      loadClientProjects(clientId);
+      loadClientInvoices(clientId);
+      loadClientMeetings(clientId);
+    }
+  };
+
+  // ── Client sub-tabs ──────────────────────────────────────
+  window.switchClientTab = function (clientId, tab, btn) {
+    var detail = document.getElementById('detail-' + clientId);
+    detail.querySelectorAll('.client-tab-btn').forEach(function (b) { b.classList.remove('active'); });
+    detail.querySelectorAll('.client-tab-content').forEach(function (c) { c.classList.remove('active'); });
+    btn.classList.add('active');
+    var tabEl = document.getElementById('ctab-' + clientId + '-' + tab);
+    if (tabEl) tabEl.classList.add('active');
+  };
+
+  // ── Load client projects ─────────────────────────────────
+  async function loadClientProjects(clientId) {
+    var el = document.getElementById('cprojects-' + clientId);
+    if (!el || el.dataset.loaded) return;
+    el.dataset.loaded = '1';
+    try {
+      var data = await JYB.adminFetch('/api/admin/projects?client_id=' + clientId);
+      var projects = data.projects || [];
+      if (projects.length === 0) {
+        el.innerHTML = '<div class="empty-state" style="padding:16px 0;"><p>No projects yet.</p></div>';
+      } else {
+        el.innerHTML = projects.map(function (p) {
+          return '<div class="project-card">' +
+            '<div class="project-header">' +
+              '<span class="project-title">' + JYB.escapeHtml(p.title) + '</span>' +
+              JYB.statusBadge(p.status) +
+            '</div>' +
+            '<div class="project-meta">' +
+              JYB.typeBadge(p.type) +
+              '<span class="project-dates">' + JYB.formatDateRange(p.start_date, p.due_date) + '</span>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+    } catch (err) {
+      el.innerHTML = '<div class="msg msg-error visible">' + JYB.escapeHtml(err.message) + '</div>';
+    }
+  }
+
+  // ── Load client invoices ─────────────────────────────────
+  async function loadClientInvoices(clientId) {
+    var el = document.getElementById('cinvoices-' + clientId);
+    if (!el || el.dataset.loaded) return;
+    el.dataset.loaded = '1';
+    try {
+      var data = await JYB.adminFetch('/api/admin/invoices?client_id=' + clientId);
+      var invoices = data.invoices || [];
+      if (invoices.length === 0) {
+        el.innerHTML = '<div class="empty-state" style="padding:16px 0;"><p>No invoices yet.</p></div>';
+      } else {
+        el.innerHTML = '<div class="invoice-table-wrap"><table class="invoice-table"><thead><tr>' +
+          '<th>Invoice #</th><th>Issued</th><th>Due</th><th>Amount</th><th>Status</th>' +
+        '</tr></thead><tbody>' +
+        invoices.map(function (i) {
+          return '<tr>' +
+            '<td class="font-head" style="font-weight:600;">' + JYB.escapeHtml(i.invoice_number) + '</td>' +
+            '<td>' + JYB.formatDate(i.issued_date) + '</td>' +
+            '<td>' + JYB.formatDate(i.due_date) + '</td>' +
+            '<td class="font-head" style="font-weight:600;">' + JYB.formatMoney(i.amount_cents) + '</td>' +
+            '<td>' + JYB.statusBadge(i.status) + '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table></div>';
+      }
+    } catch (err) {
+      el.innerHTML = '<div class="msg msg-error visible">' + JYB.escapeHtml(err.message) + '</div>';
+    }
+  }
+
+  // ── Load client meetings ─────────────────────────────────
+  async function loadClientMeetings(clientId) {
+    var el = document.getElementById('cmeetings-' + clientId);
+    if (!el || el.dataset.loaded) return;
+    el.dataset.loaded = '1';
+    try {
+      var data = await JYB.adminFetch('/api/admin/meetings?client_id=' + clientId);
+      var meetings = data.meetings || [];
+      if (meetings.length === 0) {
+        el.innerHTML = '<div class="empty-state" style="padding:16px 0;"><p>No meeting notes yet.</p></div>';
+      } else {
+        el.innerHTML = meetings.map(function (m) {
+          var visibleBadge = m.visible_to_client
+            ? '<span class="badge badge-green" style="font-size:11px;">Visible to client</span>'
+            : '<span class="badge badge-silver" style="font-size:11px;">Internal only</span>';
+          var actionHtml = '';
+          if (m.action_items) {
+            try {
+              var items = typeof m.action_items === 'string' ? JSON.parse(m.action_items) : m.action_items;
+              if (Array.isArray(items) && items.length > 0) {
+                actionHtml = '<ul class="action-items-list mt-xs">' +
+                  items.map(function (a) {
+                    var text = typeof a === 'string' ? a : (a.text || a.item || '');
+                    return '<li class="action-item">' + JYB.escapeHtml(text) + '</li>';
+                  }).join('') + '</ul>';
+              }
+            } catch (e) {}
+          }
+          var internalHtml = '';
+          if (m.internal_notes) {
+            internalHtml = '<div class="internal-label mt-xs">Internal Only</div>' +
+              '<div style="font-size:13px;color:var(--amber);margin-top:4px;">' + JYB.escapeHtml(m.internal_notes) + '</div>';
+          }
+          return '<div class="meeting-card">' +
+            '<div class="flex-center gap-sm mb-xs">' +
+              '<span class="meeting-date" style="margin:0;">' + JYB.formatDate(m.meeting_date) + '</span>' +
+              visibleBadge +
+            '</div>' +
+            '<div class="meeting-summary">' + JYB.escapeHtml(m.summary) + '</div>' +
+            actionHtml + internalHtml +
+          '</div>';
+        }).join('');
+      }
+    } catch (err) {
+      el.innerHTML = '<div class="msg msg-error visible">' + JYB.escapeHtml(err.message) + '</div>';
+    }
+  }
+
+  // ── Add Client Form ──────────────────────────────────────
+  document.getElementById('add-client-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var btn = document.getElementById('add-client-btn');
+    var msg = document.getElementById('add-client-msg');
+    JYB.hideMsg(msg);
+
+    var name         = document.getElementById('c-name').value.trim();
+    var email        = document.getElementById('c-email').value.trim();
+    var phone        = document.getElementById('c-phone').value.trim();
+    var company      = document.getElementById('c-company').value.trim();
+    var account_type = document.getElementById('c-account-type').value;
+    var plan         = document.getElementById('c-plan').value.trim();
+    var start_date   = document.getElementById('c-start-date').value;
+    var notes        = document.getElementById('c-notes').value.trim();
+
+    if (!name || !email || !account_type) {
+      JYB.showMsg(msg, 'Name, email, and account type are required.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Creating\u2026';
+
+    try {
+      var data = await JYB.adminFetch('/api/admin/clients', {
+        method: 'POST',
+        body: JSON.stringify({ name, email, phone: phone || null, company: company || null, account_type, plan: plan || null, start_date: start_date || null, notes: notes || null }),
+      });
+
+      if (data.success) {
+        // Show token modal
+        document.getElementById('modal-token').textContent = data.access_token;
+        document.getElementById('modal-url').textContent   = data.login_url;
+        document.getElementById('token-modal').classList.remove('hidden');
+
+        // Reset form
+        document.getElementById('add-client-form').reset();
+
+        // Reload client list data
+        var listEl = document.getElementById('clients-list');
+        listEl.dataset.loaded = '';
+      } else {
+        JYB.showMsg(msg, data.error || 'Failed to create client.', 'error');
+      }
+    } catch (err) {
+      JYB.showMsg(msg, err.message || 'Failed to create client.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Create Client';
+  });
+
+  // ── Token Modal ──────────────────────────────────────────
+  window.closeTokenModal = function () {
+    document.getElementById('token-modal').classList.add('hidden');
+    showSection('clients');
+    loadClients();
+  };
+
+  // ── Invoice Modal ─────────────────────────────────────────
+  window.openInvoiceModal = function (clientId) {
+    currentClient = clientId;
+    document.getElementById('invoice-modal').classList.remove('hidden');
+    // Pre-fill today's date
+    var today = new Date().toISOString().slice(0, 10);
+    document.getElementById('inv-issued').value = today;
+    document.getElementById('inv-line-items').innerHTML = '';
+    JYB.hideMsg(document.getElementById('add-invoice-msg'));
+  };
+
+  window.closeInvoiceModal = function () {
+    document.getElementById('invoice-modal').classList.add('hidden');
+    document.getElementById('add-invoice-form').reset();
+    document.getElementById('inv-line-items').innerHTML = '';
+  };
+
+  window.addLineItem = function () {
+    var container = document.getElementById('inv-line-items');
+    var row = document.createElement('div');
+    row.className = 'dynamic-row dynamic-row-2col';
+    row.innerHTML =
+      '<input type="text" class="form-input" placeholder="Description" style="font-size:13px;">' +
+      '<input type="number" class="form-input" placeholder="Amount ($)" style="font-size:13px;" step="0.01" min="0">' +
+      '<button type="button" class="btn btn-ghost" onclick="this.closest(\'.dynamic-row\').remove()" title="Remove">&times;</button>';
+    container.appendChild(row);
+  };
+
+  document.getElementById('add-invoice-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var btn = document.getElementById('add-invoice-btn');
+    var msg = document.getElementById('add-invoice-msg');
+    JYB.hideMsg(msg);
+
+    var invoice_number = document.getElementById('inv-number').value.trim();
+    var amountStr      = document.getElementById('inv-amount').value.trim();
+    var issued_date    = document.getElementById('inv-issued').value;
+    var due_date       = document.getElementById('inv-due').value;
+    var notes          = document.getElementById('inv-notes').value.trim();
+
+    if (!invoice_number || !amountStr || !issued_date || !due_date) {
+      JYB.showMsg(msg, 'Invoice #, amount, issued date, and due date are required.', 'error');
+      return;
+    }
+
+    var amount_cents = Math.round(parseFloat(amountStr) * 100);
+    if (isNaN(amount_cents) || amount_cents <= 0) {
+      JYB.showMsg(msg, 'Enter a valid amount.', 'error');
+      return;
+    }
+
+    // Collect line items
+    var lineItemRows = document.querySelectorAll('#inv-line-items .dynamic-row');
+    var line_items = [];
+    lineItemRows.forEach(function (row) {
+      var inputs = row.querySelectorAll('input');
+      var desc   = inputs[0] ? inputs[0].value.trim() : '';
+      var amt    = inputs[1] ? parseFloat(inputs[1].value) : 0;
+      if (desc) {
+        line_items.push({ description: desc, amount_cents: Math.round(amt * 100) || 0 });
+      }
+    });
+
+    btn.disabled = true;
+    btn.textContent = 'Adding\u2026';
+
+    try {
+      var data = await JYB.adminFetch('/api/admin/invoices', {
+        method: 'POST',
+        body: JSON.stringify({
+          client_id: currentClient,
+          invoice_number,
+          amount_cents,
+          issued_date,
+          due_date,
+          line_items: line_items.length > 0 ? line_items : null,
+          notes: notes || null,
+        }),
+      });
+
+      if (data.success) {
+        closeInvoiceModal();
+        JYB.showMsg(document.getElementById('admin-msg'), 'Invoice added successfully.', 'success');
+        // Force reload of this client's invoices
+        var el = document.getElementById('cinvoices-' + currentClient);
+        if (el) { el.dataset.loaded = ''; el.innerHTML = JYB.spinner(); loadClientInvoices(currentClient); }
+      } else {
+        JYB.showMsg(msg, data.error || 'Failed to add invoice.', 'error');
+      }
+    } catch (err) {
+      JYB.showMsg(msg, err.message || 'Failed to add invoice.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Add Invoice';
+  });
+
+  // ── Project Modal ─────────────────────────────────────────
+  window.openProjectModal = function (clientId) {
+    currentClient = clientId;
+    document.getElementById('project-modal').classList.remove('hidden');
+    JYB.hideMsg(document.getElementById('add-project-msg'));
+  };
+
+  window.closeProjectModal = function () {
+    document.getElementById('project-modal').classList.add('hidden');
+    document.getElementById('add-project-form').reset();
+  };
+
+  document.getElementById('add-project-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var btn = document.getElementById('add-project-btn');
+    var msg = document.getElementById('add-project-msg');
+    JYB.hideMsg(msg);
+
+    var title       = document.getElementById('proj-title').value.trim();
+    var type        = document.getElementById('proj-type').value;
+    var status      = document.getElementById('proj-status').value;
+    var start_date  = document.getElementById('proj-start').value;
+    var due_date    = document.getElementById('proj-due').value;
+    var description = document.getElementById('proj-desc').value.trim();
+    var rawDeliv    = document.getElementById('proj-deliverables').value.trim();
+
+    if (!title || !type) {
+      JYB.showMsg(msg, 'Title and type are required.', 'error');
+      return;
+    }
+
+    var deliverables = rawDeliv
+      ? rawDeliv.split('\n').map(function (l) { return l.trim(); }).filter(Boolean)
+      : null;
+
+    btn.disabled = true;
+    btn.textContent = 'Adding\u2026';
+
+    try {
+      var data = await JYB.adminFetch('/api/admin/projects', {
+        method: 'POST',
+        body: JSON.stringify({
+          client_id:   currentClient,
+          title,
+          description: description || null,
+          type,
+          status:      status || 'in_progress',
+          start_date:  start_date || null,
+          due_date:    due_date   || null,
+          deliverables,
+        }),
+      });
+
+      if (data.success) {
+        closeProjectModal();
+        JYB.showMsg(document.getElementById('admin-msg'), 'Project added successfully.', 'success');
+        var el = document.getElementById('cprojects-' + currentClient);
+        if (el) { el.dataset.loaded = ''; el.innerHTML = JYB.spinner(); loadClientProjects(currentClient); }
+      } else {
+        JYB.showMsg(msg, data.error || 'Failed to add project.', 'error');
+      }
+    } catch (err) {
+      JYB.showMsg(msg, err.message || 'Failed to add project.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Add Project';
+  });
+
+  // ── Meeting Modal ─────────────────────────────────────────
+  window.openMeetingModal = function (clientId) {
+    currentClient = clientId;
+    document.getElementById('meeting-modal').classList.remove('hidden');
+    var today = new Date().toISOString().slice(0, 10);
+    document.getElementById('mtg-date').value = today;
+    document.getElementById('mtg-action-items').innerHTML = '';
+    document.getElementById('mtg-visible').checked = true;
+    JYB.hideMsg(document.getElementById('add-meeting-msg'));
+  };
+
+  window.closeMeetingModal = function () {
+    document.getElementById('meeting-modal').classList.add('hidden');
+    document.getElementById('add-meeting-form').reset();
+    document.getElementById('mtg-action-items').innerHTML = '';
+  };
+
+  window.addActionItem = function () {
+    var container = document.getElementById('mtg-action-items');
+    var row = document.createElement('div');
+    row.className = 'dynamic-row';
+    row.style.gridTemplateColumns = '1fr auto';
+    row.innerHTML =
+      '<input type="text" class="form-input" placeholder="Action item\u2026" style="font-size:13px;">' +
+      '<button type="button" class="btn btn-ghost" onclick="this.closest(\'.dynamic-row\').remove()" title="Remove">&times;</button>';
+    container.appendChild(row);
+    row.querySelector('input').focus();
+  };
+
+  document.getElementById('add-meeting-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var btn = document.getElementById('add-meeting-btn');
+    var msg = document.getElementById('add-meeting-msg');
+    JYB.hideMsg(msg);
+
+    var meeting_date     = document.getElementById('mtg-date').value;
+    var summary          = document.getElementById('mtg-summary').value.trim();
+    var internal_notes   = document.getElementById('mtg-internal').value.trim();
+    var visible_to_client = document.getElementById('mtg-visible').checked;
+
+    if (!meeting_date || !summary) {
+      JYB.showMsg(msg, 'Meeting date and summary are required.', 'error');
+      return;
+    }
+
+    var actionInputs = document.querySelectorAll('#mtg-action-items input[type="text"]');
+    var action_items = [];
+    actionInputs.forEach(function (inp) {
+      var val = inp.value.trim();
+      if (val) action_items.push(val);
+    });
+
+    btn.disabled = true;
+    btn.textContent = 'Saving\u2026';
+
+    try {
+      var data = await JYB.adminFetch('/api/admin/meetings', {
+        method: 'POST',
+        body: JSON.stringify({
+          client_id: currentClient,
+          meeting_date,
+          summary,
+          action_items: action_items.length > 0 ? action_items : null,
+          internal_notes: internal_notes || null,
+          visible_to_client,
+        }),
+      });
+
+      if (data.success) {
+        closeMeetingModal();
+        JYB.showMsg(document.getElementById('admin-msg'), 'Meeting note saved.', 'success');
+        var el = document.getElementById('cmeetings-' + currentClient);
+        if (el) { el.dataset.loaded = ''; el.innerHTML = JYB.spinner(); loadClientMeetings(currentClient); }
+      } else {
+        JYB.showMsg(msg, data.error || 'Failed to save meeting note.', 'error');
+      }
+    } catch (err) {
+      JYB.showMsg(msg, err.message || 'Failed to save meeting note.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Add Note';
+  });
+
+  // ── Close modals on backdrop click ──────────────────────
+  ['token-modal','invoice-modal','project-modal','meeting-modal'].forEach(function (id) {
+    document.getElementById(id).addEventListener('click', function (e) {
+      if (e.target === this) {
+        this.classList.add('hidden');
+      }
+    });
+  });
+
+  // ── Boot ─────────────────────────────────────────────────
+  showSection('clients');
+  loadClients();
+
+})();
+</script>
+
+</body>
+</html>
